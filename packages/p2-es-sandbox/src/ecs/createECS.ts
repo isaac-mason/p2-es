@@ -1,12 +1,12 @@
 import { createECS as createAranciniECS } from '@arancini/react'
 import { World } from 'arancini'
-import { MouseComponent } from './components/MouseComponent'
 import { PhysicsBodyComponent } from './components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from './components/PhysicsSpringComponent'
-import { PhysicsWorldComponent } from './components/PhysicsWorldComponent'
-import { PixiComponent } from './components/PixiComponent'
-import { SandboxContextComponent } from './components/SandboxContextComponent'
-import { SettingsComponent } from './components/SettingsComponent'
+import { MouseComponent } from './components/singletons/MouseComponent'
+import { PhysicsWorldComponent } from './components/singletons/PhysicsWorldComponent'
+import { PixiComponent } from './components/singletons/PixiComponent'
+import { SettingsComponent } from './components/singletons/SettingsSingletonComponent'
+import { UpdateHandlersComponent } from './components/singletons/UpdateHandlersSingletonComponent'
 import { SpriteComponent } from './components/SpriteComponent'
 import { PhysicsAABBRendererSystem } from './systems/PhysicsAABBRendererSystem'
 import { PhysicsBodyRendererSystem } from './systems/PhysicsBodyRendererSystem'
@@ -24,8 +24,8 @@ export const createECS = () => {
     world.registerComponent(PixiComponent)
     world.registerComponent(SettingsComponent)
     world.registerComponent(SpriteComponent)
-    world.registerComponent(SandboxContextComponent)
     world.registerComponent(MouseComponent)
+    world.registerComponent(UpdateHandlersComponent)
 
     world.registerSystem(PhysicsSystem)
     world.registerSystem(PhysicsBodyRendererSystem)

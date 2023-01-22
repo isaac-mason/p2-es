@@ -3,10 +3,11 @@ import React, { useEffect } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
 import { useECS } from '../context/ecsContext'
-import { SettingsComponent } from '../ecs/components/SettingsComponent'
+import { SettingsComponent } from '../ecs/components/singletons/SettingsSingletonComponent'
 import { PhysicsSystem } from '../ecs/systems/PhysicsSystem'
 import { useConst } from '../hooks/useConst'
 import { Tools } from '../types'
+import { PickPanTool } from './tools/PickPanTool'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
@@ -49,7 +50,7 @@ export const Controls = ({ reset }: ControlsProps) => {
 
     const physicsSystem = useConst(() => ecs.world.getSystem(PhysicsSystem))
 
-    const [{ tool: _tool }, setTool] = useControls('Tool', () => ({
+    const [{ tool }, setTool] = useControls('Tool', () => ({
         tool: {
             label: 'selected tool',
             value: DefaultTool,
@@ -180,6 +181,8 @@ export const Controls = ({ reset }: ControlsProps) => {
                 />
                 <LevaPanel />
             </ControlsWrapper>
+
+            {tool === Tools.PICK_PAN && <PickPanTool />}
 
             <ecs.Entity>
                 <ecs.Component

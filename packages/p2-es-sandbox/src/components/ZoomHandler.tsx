@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
-import { MouseComponent } from '../ecs/components/MouseComponent'
-import { PixiComponent } from '../ecs/components/PixiComponent'
+import { MouseComponent } from '../ecs/components/singletons/MouseComponent'
+import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 
 const SCROLL_FACTOR = 0.1
 
-export const Zoom = () => {
+export const ZoomHandler = () => {
     const pixi = useSingletonComponent(PixiComponent)
     const mouse = useSingletonComponent(MouseComponent)
 

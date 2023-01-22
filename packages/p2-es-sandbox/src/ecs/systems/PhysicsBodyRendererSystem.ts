@@ -1,10 +1,13 @@
 import { System } from 'arancini'
 import { Body } from 'p2-es'
-import { drawRenderable } from '../../pixi/drawRenderable'
+import { drawRenderable } from '../../utils/pixi/drawRenderable'
 import { randomPastelHex } from '../../utils/randomPastelHex'
 import { PhysicsBodyComponent } from '../components/PhysicsBodyComponent'
-import { PixiComponent } from '../components/PixiComponent'
-import { Settings, SettingsComponent } from '../components/SettingsComponent'
+import { PixiComponent } from '../components/singletons/PixiComponent'
+import {
+    Settings,
+    SettingsComponent,
+} from '../components/singletons/SettingsSingletonComponent'
 import { SpriteComponent } from '../components/SpriteComponent'
 
 const LINE_WIDTH = 0.01

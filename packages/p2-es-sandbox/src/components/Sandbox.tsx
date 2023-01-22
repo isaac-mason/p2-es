@@ -1,22 +1,17 @@
-import * as p2 from 'p2-es'
 import React, { useEffect, useRef, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
 import { EcsContextProvider } from '../context/ecsContext'
-import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
-import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent'
-import { PhysicsWorldComponent } from '../ecs/components/PhysicsWorldComponent'
-import { PixiComponent } from '../ecs/components/PixiComponent'
-import { SandboxContextComponent } from '../ecs/components/SandboxContextComponent'
+import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { createECS } from '../ecs/createECS'
 import { useConst } from '../hooks/useConst'
-import { initPixi } from '../pixi/initPixi'
+import { initPixi } from '../utils/pixi/initPixi'
 import { SandboxFunction } from '../types'
-import { loop } from '../utils/loop'
-import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
 import { Controls } from './Controls'
-import { Mouse } from './Mouse'
-import { Zoom } from './Zoom'
+import { Loop } from './Loop'
+import { MouseObserver } from './MouseObserver'
+import { Physics } from './Physics'
+import { ZoomHandler } from './ZoomHandler'
 
 const CONSOLE_MESSAGE = `
 === p2-es ===
@@ -107,79 +102,26 @@ export const Sandbox = ({
 }: SandboxProps) => {
     const ecs = useConst(() => createECS())
 
-    const { world } = ecs
+    const [version, setVersion] = useState(0)
 
     const canvasWrapperElement = useRef<HTMLDivElement>(null)
 
-    const [version, setVersion] = useState(0)
-
     useEffect(() => {
-        const {
-            renderer,
-            stage,
-            container,
-            graphics,
-            background,
-            canvasElement,
-            destroyPixi,
-        } = initPixi(canvasWrapperElement.current!)
-
-        const pixi = {
-            renderer,
-            stage,
-            container,
-            graphics,
-            background,
-            canvasElement,
-        }
-
-        const {
-            world: physicsWorld,
-            updateHandlers,
-            sandboxContext,
-            destroySandbox,
-        } = sandboxFunctionEvaluator({ pixi, sandboxFunction })
-
-        const pixiEntity = world.create.entity()
-        pixiEntity.add(PixiComponent, pixi)
-
-        const sandboxContextEntity = world.create.entity()
-        sandboxContextEntity.add(SandboxContextComponent, sandboxContext)
-
-        const physicsWorldEntity = world.create.entity()
-        physicsWorldEntity.add(PhysicsWorldComponent, physicsWorld)
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const globalWindow = window as any
-        globalWindow.world = physicsWorld
-        globalWindow.p2 = p2
-        globalWindow.sandbox = sandboxContext
-
         // eslint-disable-next-line no-console
         console.log(CONSOLE_MESSAGE)
+    }, [])
 
-        const stopLoop = loop((delta) => {
-            world.update(delta)
-            updateHandlers.forEach((handler) => handler(delta))
-        })
+    useEffect(() => {
+        const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
+
+        const pixiEntity = ecs.world.create.entity()
+        pixiEntity.add(PixiComponent, pixi)
 
         return () => {
-            stopLoop()
+            pixiEntity.destroy()
             destroyPixi()
-            destroySandbox()
-
-            const entities = [
-                pixiEntity,
-                physicsWorldEntity,
-                sandboxContextEntity,
-                ...world.query([PhysicsBodyComponent]),
-                ...world.query([PhysicsSpringComponent]),
-            ]
-            entities.forEach((entity) => {
-                entity.destroy()
-            })
         }
-    }, [version])
+    }, [])
 
     return (
         <React.StrictMode>
@@ -195,8 +137,13 @@ export const Sandbox = ({
                     </SandboxMain>
                 </SandboxWrapper>
 
-                <Mouse />
-                <Zoom />
+                <Physics key={version} sandboxFunction={sandboxFunction} />
+
+                <MouseObserver />
+
+                <ZoomHandler />
+
+                <Loop />
             </EcsContextProvider>
         </React.StrictMode>
     )

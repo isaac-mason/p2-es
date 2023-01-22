@@ -1,8 +1,11 @@
 import { System } from 'arancini'
 import { World } from 'p2-es'
-import { PhysicsWorldComponent } from '../components/PhysicsWorldComponent'
-import { PixiComponent } from '../components/PixiComponent'
-import { Settings, SettingsComponent } from '../components/SettingsComponent'
+import { PhysicsWorldComponent } from '../components/singletons/PhysicsWorldComponent'
+import { PixiComponent } from '../components/singletons/PixiComponent'
+import {
+    Settings,
+    SettingsComponent,
+} from '../components/singletons/SettingsSingletonComponent'
 
 const LINE_WIDTH = 0.01
 
@@ -30,7 +33,6 @@ export class PhysicsAABBRendererSystem extends System {
         const { settings, pixi, physicsWorld } = this
         if (!settings || !pixi || !physicsWorld) return
 
-        // Draw AABBs
         if (settings.drawAABBs) {
             pixi.graphics.aabb.clear()
             pixi.container.removeChild(pixi.graphics.aabb)

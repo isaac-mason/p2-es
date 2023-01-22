@@ -1,8 +1,11 @@
 import { System } from 'arancini'
 import { LinearSpring, vec2 } from 'p2-es'
 import { PhysicsSpringComponent } from '../components/PhysicsSpringComponent'
-import { PixiComponent } from '../components/PixiComponent'
-import { Settings, SettingsComponent } from '../components/SettingsComponent'
+import { PixiComponent } from '../components/singletons/PixiComponent'
+import {
+    Settings,
+    SettingsComponent,
+} from '../components/singletons/SettingsSingletonComponent'
 import { SpriteComponent } from '../components/SpriteComponent'
 
 export class PhysicsSpringRendererSystem extends System {

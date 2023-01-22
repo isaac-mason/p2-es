@@ -2,8 +2,11 @@ import { Entity, System } from 'arancini'
 import { Body, Spring, World } from 'p2-es'
 import { PhysicsBodyComponent } from '../components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from '../components/PhysicsSpringComponent'
-import { PhysicsWorldComponent } from '../components/PhysicsWorldComponent'
-import { Settings, SettingsComponent } from '../components/SettingsComponent'
+import { PhysicsWorldComponent } from '../components/singletons/PhysicsWorldComponent'
+import {
+    Settings,
+    SettingsComponent,
+} from '../components/singletons/SettingsSingletonComponent'
 
 export class PhysicsSystem extends System {
     queries = {

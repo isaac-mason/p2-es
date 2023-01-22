@@ -1,5 +1,5 @@
 import { System } from 'arancini'
-import { PixiComponent } from '../components/PixiComponent'
+import { PixiComponent } from '../components/singletons/PixiComponent'
 import { SpriteComponent } from '../components/SpriteComponent'
 
 export class PixiRendererSystem extends System {
