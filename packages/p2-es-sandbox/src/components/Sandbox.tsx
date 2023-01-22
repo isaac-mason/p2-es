@@ -1,22 +1,22 @@
-import { Leva, LevaPanel } from 'leva'
 import * as p2 from 'p2-es'
 import React, { useEffect, useRef, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
+import { EcsContextProvider } from '../context/ecsContext'
 import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent'
 import { PhysicsWorldComponent } from '../ecs/components/PhysicsWorldComponent'
 import { PixiComponent } from '../ecs/components/PixiComponent'
 import { SandboxContextComponent } from '../ecs/components/SandboxContextComponent'
-import { ecs } from '../ecs/ecs'
+import { createECS } from '../ecs/createECS'
 import { useConst } from '../hooks/useConst'
 import { initPixi } from '../pixi/initPixi'
 import { SandboxFunction } from '../types'
 import { loop } from '../utils/loop'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
 import { Controls } from './Controls'
-
-const SCROLL_FACTOR = 0.1
+import { Mouse } from './Mouse'
+import { Zoom } from './Zoom'
 
 const CONSOLE_MESSAGE = `
 === p2-es ===
@@ -56,6 +56,7 @@ const SandboxWrapper = styled.div`
     justify-content: center;
     width: 100%;
     height: 100%;
+    background-color: #fff;
 `
 
 const SandboxHeader = styled.div`
@@ -88,16 +89,6 @@ const SandboxMain = styled.div`
     }
 `
 
-const ControlsWrapper = styled.div`
-    padding: 5px;
-    background: #181c20;
-    width: 100%;
-
-    ${up('md')} {
-        width: 320px;
-    }
-`
-
 const SandboxCanvasWrapper = styled.div`
     flex: none;
     height: calc(100% - 10em);
@@ -114,8 +105,9 @@ export const Sandbox = ({
     controls = true,
     sandboxFunction,
 }: SandboxProps) => {
-    const ECS = useConst(() => ecs())
-    const { world } = ECS
+    const ecs = useConst(() => createECS())
+
+    const { world } = ecs
 
     const canvasWrapperElement = useRef<HTMLDivElement>(null)
 
@@ -166,47 +158,6 @@ export const Sandbox = ({
         // eslint-disable-next-line no-console
         console.log(CONSOLE_MESSAGE)
 
-        const zoom = (x: number, y: number, multiplier: number) => {
-            const zoomOut = multiplier >= 0
-
-            let scrollFactor = SCROLL_FACTOR
-
-            if (!zoomOut) {
-                scrollFactor *= -1
-            }
-
-            scrollFactor *= Math.abs(multiplier)
-
-            container.scale.x *= 1 + scrollFactor
-            container.scale.y *= 1 + scrollFactor
-            container.position.x += scrollFactor * (container.position.x - x)
-            container.position.y += scrollFactor * (container.position.y - y)
-        }
-
-        const wheelHandler = (event: WheelEvent) => {
-            const n = 225
-            const n1 = n - 1
-
-            let delta = event.deltaY
-
-            // noramlize delta
-            delta = -delta / 1.35
-
-            // quadratic scale if |d| > 1
-            if (delta < 1) {
-                delta = delta < -1 ? (-(delta ** 2) - n1) / n : delta
-            } else {
-                delta = (delta ** 2 + n1) / n
-            }
-
-            // delta should not be greater than 2
-            delta = Math.min(Math.max(delta / 2, -1), 1)
-
-            zoom(0, 0, delta)
-        }
-
-        canvasElement.addEventListener('wheel', wheelHandler, false)
-
         const stopLoop = loop((delta) => {
             world.update(delta)
             updateHandlers.forEach((handler) => handler(delta))
@@ -216,8 +167,6 @@ export const Sandbox = ({
             stopLoop()
             destroyPixi()
             destroySandbox()
-
-            canvasElement.removeEventListener('wheel', wheelHandler)
 
             const entities = [
                 pixiEntity,
@@ -234,32 +183,21 @@ export const Sandbox = ({
 
     return (
         <React.StrictMode>
-            <SandboxWrapper>
-                <SandboxHeader>{title}</SandboxHeader>
-                <SandboxMain>
-                    <SandboxCanvasWrapper ref={canvasWrapperElement} />
-                    {controls ? (
-                        <ControlsWrapper>
-                            <Leva
-                                fill
-                                flat
-                                titleBar={false}
-                                theme={{
-                                    sizes: {
-                                        controlWidth: '110px',
-                                    },
-                                }}
-                            />
-                            <LevaPanel />
+            <EcsContextProvider ecs={ecs}>
+                <SandboxWrapper>
+                    <SandboxHeader>{title}</SandboxHeader>
+                    <SandboxMain>
+                        <SandboxCanvasWrapper ref={canvasWrapperElement} />
 
-                            <Controls
-                                ECS={ECS}
-                                reset={() => setVersion((v) => v + 1)}
-                            />
-                        </ControlsWrapper>
-                    ) : null}
-                </SandboxMain>
-            </SandboxWrapper>
+                        {controls ? (
+                            <Controls reset={() => setVersion((v) => v + 1)} />
+                        ) : null}
+                    </SandboxMain>
+                </SandboxWrapper>
+
+                <Mouse />
+                <Zoom />
+            </EcsContextProvider>
         </React.StrictMode>
     )
 }

@@ -346,6 +346,7 @@ export class Demo extends p2.EventEmitter {
         }
 
         this.stage.mouseup = this.stage.touchend = (e) => {
+            console.log(e)
             down = false
             lastMoveX = e.data.global.x
             lastMoveY = e.data.global.y

@@ -1,4 +1,5 @@
 import { Renderer, Container, Graphics } from 'pixi.js'
+import '@pixi/events'
 
 export const initPixi = (domElement: HTMLElement) => {
     const canvasElement = document.createElement('canvas')

@@ -1,10 +1,22 @@
-import { createECS } from '@arancini/react'
-import { button, useControls } from 'leva'
+import { button, Leva, LevaPanel, useControls } from 'leva'
 import React, { useEffect } from 'react'
+import { up } from 'styled-breakpoints'
+import styled from 'styled-components'
+import { useECS } from '../context/ecsContext'
 import { SettingsComponent } from '../ecs/components/SettingsComponent'
 import { PhysicsSystem } from '../ecs/systems/PhysicsSystem'
 import { useConst } from '../hooks/useConst'
 import { Tools } from '../types'
+
+const ControlsWrapper = styled.div`
+    padding: 5px;
+    background: #181c20;
+    width: 100%;
+
+    ${up('md')} {
+        width: 320px;
+    }
+`
 
 const DefaultTool = Tools.PICK_PAN
 
@@ -29,12 +41,13 @@ export const defaultSettings = {
 }
 
 export type ControlsProps = {
-    ECS: ReturnType<typeof createECS>
     reset: () => void
 }
 
-export const Controls = ({ ECS, reset }: ControlsProps) => {
-    const physicsSystem = useConst(() => ECS.world.getSystem(PhysicsSystem))
+export const Controls = ({ reset }: ControlsProps) => {
+    const ecs = useECS()
+
+    const physicsSystem = useConst(() => ecs.world.getSystem(PhysicsSystem))
 
     const [{ tool: _tool }, setTool] = useControls('Tool', () => ({
         tool: {
@@ -154,8 +167,22 @@ export const Controls = ({ ECS, reset }: ControlsProps) => {
 
     return (
         <>
-            <ECS.Entity>
-                <ECS.Component
+            <ControlsWrapper>
+                <Leva
+                    fill
+                    flat
+                    titleBar={false}
+                    theme={{
+                        sizes: {
+                            controlWidth: '110px',
+                        },
+                    }}
+                />
+                <LevaPanel />
+            </ControlsWrapper>
+
+            <ecs.Entity>
+                <ecs.Component
                     type={SettingsComponent}
                     args={[
                         {
@@ -169,7 +196,7 @@ export const Controls = ({ ECS, reset }: ControlsProps) => {
                         },
                     ]}
                 />
-            </ECS.Entity>
+            </ecs.Entity>
         </>
     )
 }
