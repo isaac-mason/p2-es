@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { MouseComponent } from '../ecs/components/singletons/MouseComponent'
-import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
-import { useSingletonComponent } from '../hooks/useSingletonComponent'
+import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
+import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
+import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 
 const SCROLL_FACTOR = 0.1
 

@@ -346,7 +346,6 @@ export class Demo extends p2.EventEmitter {
         }
 
         this.stage.mouseup = this.stage.touchend = (e) => {
-            console.log(e)
             down = false
             lastMoveX = e.data.global.x
             lastMoveY = e.data.global.y
@@ -1411,8 +1410,8 @@ export class Demo extends p2.EventEmitter {
     printConsoleMessage() {
         console.log(
             [
-                `=== p2.js v${p2.version} ===`,
-                'Welcome to the p2.js debugging environment!',
+                `=== p2-es ===`,
+                'Welcome to the p2-es debugging environment!',
                 'Did you know you can interact with the physics here in the console? Try executing the following:',
                 '',
                 '  world.gravity[1] = 10;',

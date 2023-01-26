@@ -9,9 +9,9 @@ import { initPixi } from '../utils/pixi/initPixi'
 import { SandboxFunction } from '../types'
 import { Controls } from './Controls'
 import { Loop } from './Loop'
-import { MouseObserver } from './MouseObserver'
+import { MouseObserver } from './interaction/MouseObserver'
 import { Physics } from './Physics'
-import { ZoomHandler } from './ZoomHandler'
+import { ZoomHandler } from './interaction/ZoomHandler'
 
 const CONSOLE_MESSAGE = `
 === p2-es ===

@@ -1,5 +1,5 @@
 import * as p2 from 'p2-es'
-import { SpriteComponent } from '../ecs/components/SpriteComponent'
+import { SpriteComponent } from '../../ecs/components/SpriteComponent'
 import { drawCapsule } from './drawCapsule'
 import { drawCircle } from './drawCircle'
 import { drawConvex } from './drawConvex'

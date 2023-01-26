@@ -1,18 +1,22 @@
 import * as p2 from 'p2-es'
 import { useEffect, useRef } from 'react'
+import { useECS } from '../../context/ecsContext'
 import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
+import { useSingletonEntity } from '../../hooks/useSingletonEntity'
 
 const PICK_PRECISION = 0.1
 
 type InteractionState = 'default' | 'dragging' | 'panning'
 
 export const PickPanTool = () => {
+    const ecs = useECS()
+
     const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
     const pixi = useSingletonComponent(PixiComponent)
-    const mouse = useSingletonComponent(MouseComponent)
+    const mouseEntity = useSingletonEntity([MouseComponent])
 
     const interactionState = useRef<InteractionState>('default')
 
@@ -23,7 +27,9 @@ export const PickPanTool = () => {
     const mouseConstraint = useRef<p2.Constraint | null>(null)
 
     useEffect(() => {
-        if (!pixi || !physicsWorld || !mouse) return
+        if (!pixi || !physicsWorld || !mouseEntity) return
+
+        const mouse = mouseEntity.get(MouseComponent)
 
         const { physicsWorld: world } = physicsWorld
 
@@ -31,10 +37,10 @@ export const PickPanTool = () => {
 
         const onDownHandler = () => {
             const { x, y } = mouse.physicsPosition
-            const physicsPosition: [number, number] = [x, y]
+            const mousePhysicsPosition: [number, number] = [x, y]
 
             const hitTest = world.hitTest(
-                physicsPosition,
+                mousePhysicsPosition,
                 world.bodies,
                 PICK_PRECISION
             )
@@ -55,16 +61,23 @@ export const PickPanTool = () => {
 
                 interactionState.current = 'dragging'
 
-                // Add mouse joint to the body
-                const localPoint = p2.vec2.create()
-                body.toLocalFrame(localPoint, physicsPosition)
+                // move the mouse body
+                mouseBody.current.position[0] = mouse.physicsPosition.x
+                mouseBody.current.position[1] = mouse.physicsPosition.y
 
+                // add mouse body to world
                 world.addBody(mouseBody.current)
+
+                // Get local point of the body to create the joint on
+                const localPoint = p2.vec2.create()
+                body.toLocalFrame(localPoint, mousePhysicsPosition)
+
+                // Add mouse joint
                 mouseConstraint.current = new p2.RevoluteConstraint(
                     mouseBody.current,
                     body,
                     {
-                        localPivotA: physicsPosition,
+                        localPivotA: [0, 0],
                         localPivotB: localPoint,
                         maxForce: 1000 * body.mass,
                     }
@@ -130,7 +143,7 @@ export const PickPanTool = () => {
             mouse.onDownHandlers.delete(onDownHandler)
             mouse.onUpHandlers.delete(onUpHandler)
         }
-    }, [pixi, physicsWorld, mouse])
+    }, [pixi, physicsWorld, mouseEntity])
 
     return null
 }

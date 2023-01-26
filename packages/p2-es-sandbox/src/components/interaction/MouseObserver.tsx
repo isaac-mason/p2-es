@@ -1,9 +1,9 @@
 import { FederatedMouseEvent } from 'pixi.js'
 import { useEffect } from 'react'
-import { useECS } from '../context/ecsContext'
-import { MouseComponent } from '../ecs/components/singletons/MouseComponent'
-import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
-import { useSingletonComponent } from '../hooks/useSingletonComponent'
+import { useECS } from '../../context/ecsContext'
+import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
+import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
+import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 
 const PHYSICS_POS = { x: 0, y: 0 }
 

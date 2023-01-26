@@ -5,11 +5,11 @@ export class MouseComponent extends Component {
 
     physicsPosition: { x: number; y: number } = { x: 0, y: 0 }
 
-    onUpHandlers!: Set<() => void>
+    onUpHandlers = new Set<() => void>()
 
-    onDownHandlers!: Set<() => void>
+    onDownHandlers = new Set<() => void>()
 
-    onMoveHandlers!: Set<() => void>
+    onMoveHandlers = new Set<() => void>()
 
     construct() {
         this.stagePosition.x = 0
@@ -18,8 +18,8 @@ export class MouseComponent extends Component {
         this.physicsPosition.x = 0
         this.physicsPosition.y = 0
 
-        this.onUpHandlers = new Set()
-        this.onDownHandlers = new Set()
-        this.onMoveHandlers = new Set()
+        this.onUpHandlers.clear()
+        this.onDownHandlers.clear()
+        this.onMoveHandlers.clear()
     }
 }

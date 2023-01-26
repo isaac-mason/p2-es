@@ -7,7 +7,7 @@ import { SettingsComponent } from '../ecs/components/singletons/SettingsSingleto
 import { PhysicsSystem } from '../ecs/systems/PhysicsSystem'
 import { useConst } from '../hooks/useConst'
 import { Tools } from '../types'
-import { PickPanTool } from './tools/PickPanTool'
+import { PickPanTool } from './interaction/PickPanTool'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
