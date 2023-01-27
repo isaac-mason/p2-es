@@ -134,14 +134,18 @@ export const Controls = ({
         world.step(timeStep, timeStep)
     }
 
-    useControls('Actions', {
-        'manual step [s]': button(() => {
-            manualStep()
-        }),
-        'reset [r]': button(() => {
-            reset()
-        }),
-    })
+    useControls(
+        'Actions',
+        {
+            'manual step [s]': button(() => {
+                manualStep()
+            }),
+            'reset [r]': button(() => {
+                reset()
+            }),
+        },
+        [physicsWorldComponent, timeStep, reset]
+    )
 
     const [{ drawContacts, drawAABBs, debugPolygons }, setRendering] =
         useControls('Rendering', () => ({
