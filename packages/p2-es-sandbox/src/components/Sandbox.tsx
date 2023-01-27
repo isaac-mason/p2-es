@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { EcsContextProvider } from '../context/ecsContext'
+import { EcsContextProvider } from '../ecs/ecsContext'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { createECS } from '../ecs/createECS'
 import { useConst } from '../hooks/useConst'
@@ -37,7 +37,7 @@ world.addBody(body);
 `
 
 export type SandboxProps = {
-    sandboxFunction: SandboxFunction
+    setup: SandboxFunction | Record<string, SandboxFunction>
 
     title?: string
 
@@ -101,9 +101,17 @@ const SandboxCanvasWrapper = styled.div`
 export const Sandbox = ({
     title = 'p2-es sandbox',
     controls = true,
-    sandboxFunction,
+    setup,
 }: SandboxProps) => {
     const ecs = useConst(() => createECS())
+
+    const scenes = typeof setup === 'function' ? { default: setup } : setup
+
+    const sceneNames = useMemo(() => Object.keys(scenes), [scenes])
+
+    const [currentScene, setCurrentScene] = useState(sceneNames[0])
+
+    const sandboxFunction = useMemo(() => scenes[currentScene], [currentScene])
 
     const [version, setVersion] = useState(0)
 
@@ -127,17 +135,30 @@ export const Sandbox = ({
         <React.StrictMode>
             <EcsContextProvider ecs={ecs}>
                 <SandboxWrapper>
-                    <SandboxHeader>{title}</SandboxHeader>
+                    <SandboxHeader>
+                        {title}{' '}
+                        {sceneNames.length > 1 ? ` - ${currentScene}` : ''}
+                    </SandboxHeader>
                     <SandboxMain>
                         <SandboxCanvasWrapper ref={canvasWrapperElement} />
 
                         {controls ? (
-                            <Controls reset={() => setVersion((v) => v + 1)} />
+                            <Controls
+                                currentScene={currentScene}
+                                scenes={sceneNames}
+                                setScene={(sceneName) =>
+                                    setCurrentScene(sceneName)
+                                }
+                                reset={() => setVersion((v) => v + 1)}
+                            />
                         ) : null}
                     </SandboxMain>
                 </SandboxWrapper>
 
-                <Physics key={version} sandboxFunction={sandboxFunction} />
+                <Physics
+                    key={`${version}-${currentScene}`}
+                    sandboxFunction={sandboxFunction}
+                />
 
                 <PhysicsBodyRenderer />
                 <PhysicsContactRenderer />

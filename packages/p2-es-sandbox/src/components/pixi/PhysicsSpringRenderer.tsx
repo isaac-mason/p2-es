@@ -1,5 +1,5 @@
 import { LinearSpring, vec2 } from 'p2-es'
-import { useECS } from '../../context/ecsContext'
+import { useECS } from '../../ecs/ecsContext'
 import { PhysicsSpringComponent } from '../../ecs/components/PhysicsSpringComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'

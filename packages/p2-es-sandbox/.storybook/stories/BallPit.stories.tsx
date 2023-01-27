@@ -3,7 +3,7 @@ import { GSSolver } from 'p2-es'
 import React from 'react'
 import { Sandbox, SandboxContext } from '../../src'
 
-export const SandboxExample = () => {
+export const BallPit = () => {
     const fn = (context: SandboxContext) => {
         var enablePositionNoise = true, // Add some noise in circle positions
             N = 15, // Number of circles in x direction
@@ -87,10 +87,10 @@ export const SandboxExample = () => {
         return { world }
     }
 
-    return <Sandbox sandboxFunction={fn} />
+    return <Sandbox setup={fn} />
 }
 
 export default {
-    name: 'Sandbox',
-    component: SandboxExample,
+    name: 'BallPit',
+    component: BallPit,
 }

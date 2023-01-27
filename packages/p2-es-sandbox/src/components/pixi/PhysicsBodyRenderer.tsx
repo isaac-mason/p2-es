@@ -1,6 +1,6 @@
 import { Body } from 'p2-es'
 import { useCallback } from 'react'
-import { useECS } from '../../context/ecsContext'
+import { useECS } from '../../ecs/ecsContext'
 import { PhysicsBodyComponent } from '../../ecs/components/PhysicsBodyComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'

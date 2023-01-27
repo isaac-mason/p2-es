@@ -2,7 +2,8 @@ import { button, Leva, LevaPanel, useControls } from 'leva'
 import React, { useEffect } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { useECS } from '../../context/ecsContext'
+import { ButtonInput } from 'leva/dist/declarations/src/types'
+import { useECS } from '../../ecs/ecsContext'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
@@ -44,13 +45,44 @@ export const defaultSettings = {
 }
 
 export type ControlsProps = {
+    currentScene: string
+    scenes: string[]
+    setScene: (scene: string) => void
     reset: () => void
 }
 
-export const Controls = ({ reset }: ControlsProps) => {
+export const Controls = ({
+    currentScene,
+    scenes,
+    setScene,
+    reset,
+}: ControlsProps) => {
     const ecs = useECS()
 
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
+
+    useControls(
+        'Scene',
+        () => {
+            if (scenes.length === 1) return {}
+
+            const buttons: Record<string, ButtonInput> = {}
+
+            scenes.forEach((scene) => {
+                buttons[scene] = button(
+                    () => {
+                        setScene(scene)
+                    },
+                    {
+                        disabled: scene === currentScene,
+                    }
+                )
+            })
+
+            return buttons
+        },
+        [currentScene, scenes, setScene]
+    )
 
     const [{ tool }, setTool] = useControls('Tool', () => ({
         tool: {

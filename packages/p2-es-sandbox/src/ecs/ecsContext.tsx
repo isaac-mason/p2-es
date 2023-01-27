@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react'
-import { createECS } from '../ecs/createECS'
+import { createECS } from './createECS'
 
 export const ecsContext = createContext<ReturnType<typeof createECS>>(null!)
 

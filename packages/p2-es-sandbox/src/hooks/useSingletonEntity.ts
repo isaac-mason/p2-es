@@ -1,6 +1,6 @@
 import { Entity, QueryDescription } from 'arancini'
 import { useEffect, useState } from 'react'
-import { useECS } from '../context/ecsContext'
+import { useECS } from '../ecs/ecsContext'
 
 export const useSingletonEntity = (queryDescription: QueryDescription) => {
     const ecs = useECS()

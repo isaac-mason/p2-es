@@ -1,6 +1,6 @@
 import { FederatedMouseEvent } from 'pixi.js'
 import { useEffect } from 'react'
-import { useECS } from '../../context/ecsContext'
+import { useECS } from '../../ecs/ecsContext'
 import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'

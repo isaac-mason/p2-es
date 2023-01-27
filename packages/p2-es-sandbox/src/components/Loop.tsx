@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useECS } from '../context/ecsContext'
+import { useECS } from '../ecs/ecsContext'
 import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
 import { loop } from '../utils/loop'
 
