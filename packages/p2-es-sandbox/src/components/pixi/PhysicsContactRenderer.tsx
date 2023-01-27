@@ -3,7 +3,7 @@ import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { SCHEDULE } from '../../schedule'
+import { STAGES } from '../../stages'
 
 const LINE_WIDTH = 0.01
 
@@ -55,7 +55,7 @@ export const PhysicsContactRenderer = () => {
             }
         },
         [pixiComponent, physicsWorldComponent, settingsComponent],
-        SCHEDULE.RENDER_CONTACTS
+        STAGES.RENDER_CONTACTS
     )
     return null
 }

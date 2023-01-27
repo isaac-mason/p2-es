@@ -8,7 +8,7 @@ import { SpriteComponent } from '../../ecs/components/SpriteComponent'
 import { useConst } from '../../hooks/useConst'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { SCHEDULE } from '../../schedule'
+import { STAGES } from '../../stages'
 import { drawRenderable } from '../../utils/pixi/drawRenderable'
 import { randomPastelHex } from '../../utils/randomPastelHex'
 
@@ -96,7 +96,7 @@ export const PhysicsBodyRenderer = () => {
             }
         },
         [pixiComponent, settingsComponent],
-        SCHEDULE.RENDER_BODIES
+        STAGES.RENDER_BODIES
     )
 
     return null

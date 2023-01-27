@@ -1,4 +1,4 @@
-const createSchedule = <T extends Array<string>>(steps: [...T]) => {
+const createStages = <T extends Array<string>>(steps: [...T]) => {
     const schedule: Partial<Record<T[number], number>> = {}
 
     for (let i = 0; i < steps.length; i++) {
@@ -8,7 +8,7 @@ const createSchedule = <T extends Array<string>>(steps: [...T]) => {
     return schedule as Record<T[number], number>
 }
 
-export const SCHEDULE = createSchedule([
+export const STAGES = createStages([
     'SANDBOX_HANDLERS',
     'PHYSICS',
     'RENDER_BODIES',

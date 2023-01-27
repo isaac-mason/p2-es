@@ -6,7 +6,7 @@ import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingl
 import { SpriteComponent } from '../../ecs/components/SpriteComponent'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { SCHEDULE } from '../../schedule'
+import { STAGES } from '../../stages'
 
 export const PhysicsSpringRenderer = () => {
     const ecs = useECS()
@@ -97,7 +97,7 @@ export const PhysicsSpringRenderer = () => {
             }
         },
         [pixiComponent, settingsComponent],
-        SCHEDULE.RENDER_SPRINGS
+        STAGES.RENDER_SPRINGS
     )
 
     return null

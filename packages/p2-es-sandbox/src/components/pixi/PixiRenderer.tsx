@@ -1,7 +1,7 @@
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { SCHEDULE } from '../../schedule'
+import { STAGES } from '../../stages'
 
 export const PixiRenderer = () => {
     const pixiComponent = useSingletonComponent(PixiComponent)
@@ -15,7 +15,7 @@ export const PixiRenderer = () => {
             renderer.render(stage)
         },
         [pixiComponent],
-        SCHEDULE.PIXI
+        STAGES.PIXI
     )
 
     return null

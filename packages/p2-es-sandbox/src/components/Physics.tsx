@@ -11,7 +11,7 @@ import { SettingsComponent } from '../ecs/components/singletons/SettingsSingleto
 import { useConst } from '../hooks/useConst'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
-import { SCHEDULE } from '../schedule'
+import { STAGES } from '../stages'
 import { SandboxFunction } from '../types'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
 
@@ -139,7 +139,7 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
             world.step(timeStep, delta, maxSubSteps)
         },
         [settingsComponent, physicsWorldComponent],
-        SCHEDULE.PHYSICS
+        STAGES.PHYSICS
     )
 
     useFrame(
@@ -149,7 +149,7 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
             sandboxUpdate.forEach((fn) => fn(delta))
         },
         [sandboxUpdate],
-        SCHEDULE.SANDBOX_HANDLERS
+        STAGES.SANDBOX_HANDLERS
     )
 
     return null

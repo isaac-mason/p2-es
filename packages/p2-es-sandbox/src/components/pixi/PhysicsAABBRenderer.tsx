@@ -3,7 +3,7 @@ import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { SCHEDULE } from '../../schedule'
+import { STAGES } from '../../stages'
 
 const LINE_WIDTH = 0.01
 
@@ -43,7 +43,7 @@ export const PhysicsAABBRenderer = () => {
             }
         },
         [pixiComponent, settingsComponent, physicsWorldComponent],
-        SCHEDULE.RENDER_AABBS
+        STAGES.RENDER_AABBS
     )
 
     return null
