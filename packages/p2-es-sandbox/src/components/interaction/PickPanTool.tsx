@@ -1,6 +1,6 @@
 import * as p2 from 'p2-es'
 import { useEffect, useRef } from 'react'
-import { useECS } from '../../context/ecsContext'
+import { PhysicsConstraintComponent } from '../../ecs/components/PhysicsConstraintComponent'
 import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
@@ -12,8 +12,6 @@ const PICK_PRECISION = 0.1
 type InteractionState = 'default' | 'dragging' | 'panning'
 
 export const PickPanTool = () => {
-    const ecs = useECS()
-
     const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
     const pixi = useSingletonComponent(PixiComponent)
     const mouseEntity = useSingletonEntity([MouseComponent])
@@ -35,7 +33,26 @@ export const PickPanTool = () => {
 
         mouseBody.current = new p2.Body({ type: p2.Body.STATIC })
 
+        const onUpHandler = () => {
+            if (interactionState.current === 'dragging') {
+                if (mouseConstraint.current) {
+                    mouseEntity.remove(PhysicsConstraintComponent)
+                    world.removeConstraint(mouseConstraint.current)
+                    mouseConstraint.current = null
+                }
+
+                if (mouseBody.current) {
+                    world.removeBody(mouseBody.current)
+                }
+            }
+
+            interactionState.current = 'default'
+        }
+
         const onDownHandler = () => {
+            if (interactionState.current !== 'default') {
+                onUpHandler()
+            }
             const { x, y } = mouse.physicsPosition
             const mousePhysicsPosition: [number, number] = [x, y]
 
@@ -83,6 +100,11 @@ export const PickPanTool = () => {
                     }
                 )
                 world.addConstraint(mouseConstraint.current)
+
+                mouseEntity.add(
+                    PhysicsConstraintComponent,
+                    mouseConstraint.current
+                )
             } else {
                 interactionState.current = 'panning'
 
@@ -94,21 +116,6 @@ export const PickPanTool = () => {
                 panningContainerStartPosition.current.y =
                     pixi.container.position.y
             }
-        }
-
-        const onUpHandler = () => {
-            if (interactionState.current === 'dragging') {
-                if (mouseConstraint.current) {
-                    world.removeConstraint(mouseConstraint.current)
-                    mouseConstraint.current = null
-                }
-
-                if (mouseBody.current) {
-                    world.removeBody(mouseBody.current)
-                }
-            }
-
-            interactionState.current = 'default'
         }
 
         const onMoveHandler = () => {

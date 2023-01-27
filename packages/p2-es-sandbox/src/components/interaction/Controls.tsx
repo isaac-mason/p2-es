@@ -2,12 +2,14 @@ import { button, Leva, LevaPanel, useControls } from 'leva'
 import React, { useEffect } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { useECS } from '../context/ecsContext'
-import { SettingsComponent } from '../ecs/components/singletons/SettingsSingletonComponent'
-import { PhysicsSystem } from '../ecs/systems/PhysicsSystem'
-import { useConst } from '../hooks/useConst'
-import { Tools } from '../types'
-import { PickPanTool } from './interaction/PickPanTool'
+import { useECS } from '../../context/ecsContext'
+import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
+import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import { useSingletonComponent } from '../../hooks/useSingletonComponent'
+import { Tools } from '../../types'
+import { MouseObserver } from './MouseObserver'
+import { PickPanTool } from './PickPanTool'
+import { ZoomHandler } from './ZoomHandler'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
@@ -48,7 +50,7 @@ export type ControlsProps = {
 export const Controls = ({ reset }: ControlsProps) => {
     const ecs = useECS()
 
-    const physicsSystem = useConst(() => ecs.world.getSystem(PhysicsSystem))
+    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
 
     const [{ tool }, setTool] = useControls('Tool', () => ({
         tool: {
@@ -89,9 +91,15 @@ export const Controls = ({ reset }: ControlsProps) => {
         []
     )
 
+    const timeStep = 1 / physicsStepsPerSecond
+
     const manualStep = () => {
+        if (!physicsWorldComponent) return
+
+        const { physicsWorld: world } = physicsWorldComponent
+
         setPhysics({ paused: true })
-        physicsSystem?.manualStep()
+        world.step(timeStep, timeStep)
     }
 
     useControls('Actions', {
@@ -184,12 +192,15 @@ export const Controls = ({ reset }: ControlsProps) => {
 
             {tool === Tools.PICK_PAN && <PickPanTool />}
 
+            <MouseObserver />
+            <ZoomHandler />
+
             <ecs.Entity>
                 <ecs.Component
                     type={SettingsComponent}
                     args={[
                         {
-                            timeStep: 1 / physicsStepsPerSecond,
+                            timeStep,
                             maxSubSteps,
                             paused,
                             useInterpolatedPositions,

@@ -5,13 +5,16 @@ import { EcsContextProvider } from '../context/ecsContext'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { createECS } from '../ecs/createECS'
 import { useConst } from '../hooks/useConst'
-import { initPixi } from '../utils/pixi/initPixi'
 import { SandboxFunction } from '../types'
-import { Controls } from './Controls'
+import { initPixi } from '../utils/pixi/initPixi'
+import { Controls } from './interaction/Controls'
 import { Loop } from './Loop'
-import { MouseObserver } from './interaction/MouseObserver'
 import { Physics } from './Physics'
-import { ZoomHandler } from './interaction/ZoomHandler'
+import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
+import { PhysicsBodyRenderer } from './pixi/PhysicsBodyRenderer'
+import { PhysicsContactRenderer } from './pixi/PhysicsContactRenderer'
+import { PhysicsSpringRenderer } from './pixi/PhysicsSpringRenderer'
+import { PixiRenderer } from './pixi/PixiRenderer'
 
 const CONSOLE_MESSAGE = `
 === p2-es ===
@@ -107,15 +110,12 @@ export const Sandbox = ({
     const canvasWrapperElement = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        // eslint-disable-next-line no-console
-        console.log(CONSOLE_MESSAGE)
-    }, [])
-
-    useEffect(() => {
         const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
-
         const pixiEntity = ecs.world.create.entity()
         pixiEntity.add(PixiComponent, pixi)
+
+        // eslint-disable-next-line no-console
+        console.log(CONSOLE_MESSAGE)
 
         return () => {
             pixiEntity.destroy()
@@ -139,9 +139,11 @@ export const Sandbox = ({
 
                 <Physics key={version} sandboxFunction={sandboxFunction} />
 
-                <MouseObserver />
-
-                <ZoomHandler />
+                <PhysicsBodyRenderer />
+                <PhysicsContactRenderer />
+                <PhysicsSpringRenderer />
+                <PhysicsAABBRenderer />
+                <PixiRenderer />
 
                 <Loop />
             </EcsContextProvider>

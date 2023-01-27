@@ -1,7 +1,6 @@
 import * as p2 from 'p2-es'
 import { Pixi } from '../ecs/components/singletons/PixiComponent'
 import { SandboxContext, SandboxEventMap, SandboxFunction } from '../types'
-import { UpdateHandlers } from '../types/updateHandler'
 
 export type SandboxFunctionEvaluatorProps = {
     pixi: Pixi
@@ -14,7 +13,7 @@ export const sandboxFunctionEvaluator = ({
 }: SandboxFunctionEvaluatorProps) => {
     const { renderer, container } = pixi
 
-    const updateHandlers: UpdateHandlers = new Set()
+    const sandboxUpdateHandlers = new Set<(delta: number) => void>()
 
     const eventEmitter = new p2.EventEmitter<SandboxEventMap>()
 
@@ -42,11 +41,11 @@ export const sandboxFunctionEvaluator = ({
     }
 
     const onUpdate = {
-        add: (handler: () => void) => {
-            updateHandlers.add(handler)
+        add: (fn: (delta: number) => void) => {
+            sandboxUpdateHandlers.add(fn)
         },
-        remove: (handler: () => void) => {
-            updateHandlers.delete(handler)
+        remove: (fn: (delta: number) => void) => {
+            sandboxUpdateHandlers.delete(fn)
         },
     }
 
@@ -76,5 +75,5 @@ export const sandboxFunctionEvaluator = ({
         window.removeEventListener('keyup', keyboardEventHandler)
     }
 
-    return { world, updateHandlers, sandboxContext, destroySandbox }
+    return { world, sandboxUpdateHandlers, sandboxContext, destroySandbox }
 }

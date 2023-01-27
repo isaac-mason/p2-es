@@ -4,7 +4,7 @@ import { Constraint } from 'p2-es'
 export class PhysicsConstraintComponent extends Component {
     constraint!: Constraint
 
-    construct(spring: Constraint) {
-        this.constraint = spring
+    construct(constraint: Constraint) {
+        this.constraint = constraint
     }
 }

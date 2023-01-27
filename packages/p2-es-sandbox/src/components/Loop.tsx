@@ -1,30 +1,38 @@
 import { useEffect } from 'react'
 import { useECS } from '../context/ecsContext'
-import { UpdateHandlersComponent } from '../ecs/components/singletons/UpdateHandlersSingletonComponent'
-import { useSingletonComponent } from '../hooks/useSingletonComponent'
+import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
 import { loop } from '../utils/loop'
 
 export const Loop = () => {
     const ecs = useECS()
 
-    const updateHandlersComponent = useSingletonComponent(
-        UpdateHandlersComponent
-    )
-
     useEffect(() => {
-        if (!updateHandlersComponent) return
+        const updateHandlersQuery = ecs.world.create.query([
+            UpdateHandlerComponent,
+        ])
 
-        const { updateHandlers } = updateHandlersComponent
+        const sortedHandlers = () => {
+            return updateHandlersQuery.entities
+                .map((e) => e.get(UpdateHandlerComponent))
+                .sort((a, b) => a.priority - b.priority)
+        }
+
+        const sortedUpdateHandlers = sortedHandlers()
+
+        updateHandlersQuery.onEntityAdded.add(sortedHandlers)
+        updateHandlersQuery.onEntityRemoved.add(sortedHandlers)
 
         const stop = loop((delta) => {
-            ecs.update(delta)
-            updateHandlers.forEach((handler) => handler(delta))
+            sortedUpdateHandlers.forEach((handler) => handler.fn(delta))
         })
 
         return () => {
             stop()
+            updateHandlersQuery.onEntityAdded.remove(sortedHandlers)
+            updateHandlersQuery.onEntityRemoved.remove(sortedHandlers)
+            updateHandlersQuery.destroy()
         }
-    }, [updateHandlersComponent])
+    }, [])
 
     return null
 }
