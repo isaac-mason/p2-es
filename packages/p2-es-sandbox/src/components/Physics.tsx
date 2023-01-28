@@ -2,13 +2,13 @@ import { Entity } from 'arancini'
 import * as p2 from 'p2-es'
 import { Body, Spring } from 'p2-es'
 import { useEffect, useState } from 'react'
-import { useECS } from '../ecs/ecsContext'
 import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent'
 import { PhysicsWorldComponent } from '../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { SettingsComponent } from '../ecs/components/singletons/SettingsSingletonComponent'
 import { useConst } from '../hooks/useConst'
+import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
@@ -132,11 +132,11 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
                 settings: { timeStep, maxSubSteps, paused },
             } = settingsComponent
 
-            const { physicsWorld: world } = physicsWorldComponent
+            const { physicsWorld } = physicsWorldComponent
 
             if (paused) return
 
-            world.step(timeStep, delta, maxSubSteps)
+            physicsWorld.step(timeStep, delta, maxSubSteps)
         },
         [settingsComponent, physicsWorldComponent],
         STAGES.PHYSICS

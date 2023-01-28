@@ -1,41 +1,31 @@
 import { button, Leva, LevaPanel, useControls } from 'leva'
-import React, { useEffect } from 'react'
+import { ButtonInput } from 'leva/dist/declarations/src/types'
+import React, { useEffect, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { ButtonInput } from 'leva/dist/declarations/src/types'
-import { useECS } from '../../ecs/ecsContext'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { Tools } from '../../types'
+import { Tool, Tools } from '../../types'
 import { MouseObserver } from './MouseObserver'
 import { PickPanTool } from './PickPanTool'
-import { ZoomHandler } from './ZoomHandler'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
     background: #181c20;
-    width: 100%;
+    width: calc(100% - 10px);
 
     ${up('md')} {
         width: 320px;
+        overflow-y: auto;
     }
 `
-
-const DefaultTool = Tools.PICK_PAN
-
-const ToolOptions = {
-    'Pick/Pan [q]': Tools.PICK_PAN,
-    'Polygon [d]': Tools.POLYGON,
-    'Circle [a]': Tools.CIRCLE,
-    'Rectangle [f]': Tools.RECTANGLE,
-}
 
 const defaultPhysicsStepsPerSecond = 60
 
 export const defaultSettings = {
     physicsStepsPerSecond: defaultPhysicsStepsPerSecond,
-    timeStep: 1 / defaultPhysicsStepsPerSecond,
     maxSubSteps: 3,
     paused: false,
     useInterpolatedPositions: true,
@@ -51,6 +41,40 @@ export type ControlsProps = {
     reset: () => void
 }
 
+const useButtonGroupControls = (
+    name: string,
+    {
+        options,
+        current,
+        onChange,
+        hidden,
+    }: {
+        options: { name: string; value: string }[]
+        current: string
+        onChange: (value: string) => void
+        hidden?: boolean
+    }
+) => {
+    return useControls(
+        name,
+        () =>
+            hidden
+                ? {}
+                : options.reduce<Record<string, ButtonInput>>((tools, t) => {
+                      tools[t.name] = button(
+                          () => {
+                              onChange(t.value)
+                          },
+                          {
+                              disabled: t.value === current,
+                          }
+                      )
+                      return tools
+                  }, {}),
+        [current, options, hidden]
+    )
+}
+
 export const Controls = ({
     currentScene,
     scenes,
@@ -61,36 +85,25 @@ export const Controls = ({
 
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
 
-    useControls(
-        'Scene',
-        () => {
-            if (scenes.length === 1) return {}
+    const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
 
-            const buttons: Record<string, ButtonInput> = {}
+    useButtonGroupControls('Scene', {
+        options: scenes.map((scene) => ({ name: scene, value: scene })),
+        current: currentScene,
+        onChange: setScene,
+        hidden: scenes.length === 1,
+    })
 
-            scenes.forEach((scene) => {
-                buttons[scene] = button(
-                    () => {
-                        setScene(scene)
-                    },
-                    {
-                        disabled: scene === currentScene,
-                    }
-                )
-            })
-
-            return buttons
-        },
-        [currentScene, scenes, setScene]
-    )
-
-    const [{ tool }, setTool] = useControls('Tool', () => ({
-        tool: {
-            label: 'selected tool',
-            value: DefaultTool,
-            options: ToolOptions,
-        },
-    }))
+    useButtonGroupControls('Tool', {
+        options: [
+            { name: 'Pick/Pan [q]', value: Tools.PICK_PAN },
+            { name: 'Polygon [d]', value: Tools.POLYGON },
+            { name: 'Circle [a]', value: Tools.CIRCLE },
+            { name: 'Rectangle [f]', value: Tools.RECTANGLE },
+        ],
+        current: tool,
+        onChange: setTool,
+    })
 
     const [
         {
@@ -104,7 +117,7 @@ export const Controls = ({
         'Physics',
         () => ({
             physicsStepsPerSecond: {
-                label: 'physics steps per second',
+                label: 'steps per second',
                 value: defaultSettings.physicsStepsPerSecond,
             },
             maxSubSteps: {
@@ -128,10 +141,10 @@ export const Controls = ({
     const manualStep = () => {
         if (!physicsWorldComponent) return
 
-        const { physicsWorld: world } = physicsWorldComponent
+        const { physicsWorld } = physicsWorldComponent
 
         setPhysics({ paused: true })
-        world.step(timeStep, timeStep)
+        physicsWorld.step(timeStep, timeStep)
     }
 
     useControls(
@@ -168,19 +181,19 @@ export const Controls = ({
             const key = event.key.toLowerCase()
 
             if (key === 'q') {
-                return setTool({ tool: Tools.PICK_PAN })
+                return setTool(Tools.PICK_PAN)
             }
 
             if (key === 'd') {
-                return setTool({ tool: Tools.POLYGON })
+                return setTool(Tools.POLYGON)
             }
 
             if (key === 'a') {
-                return setTool({ tool: Tools.CIRCLE })
+                return setTool(Tools.CIRCLE)
             }
 
             if (key === 'f') {
-                return setTool({ tool: Tools.RECTANGLE })
+                return setTool(Tools.RECTANGLE)
             }
 
             if (key === 'p' || key === ' ') {
@@ -229,7 +242,6 @@ export const Controls = ({
             {tool === Tools.PICK_PAN && <PickPanTool />}
 
             <MouseObserver />
-            <ZoomHandler />
 
             <ecs.Entity>
                 <ecs.Component

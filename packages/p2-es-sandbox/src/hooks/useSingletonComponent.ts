@@ -1,6 +1,6 @@
 import { Component, ComponentClass } from 'arancini'
 import { useEffect, useState } from 'react'
-import { useECS } from '../ecs/ecsContext'
+import { useECS } from './useECS'
 
 export const useSingletonComponent = <T extends Component>(
     componentClass: ComponentClass<T>

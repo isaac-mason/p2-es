@@ -1,25 +1,61 @@
 import { Component } from 'arancini'
+import { FederatedMouseEvent } from 'pixi.js'
+
+export type Positions = {
+    stagePosition: [number, number]
+    physicsPosition: [number, number]
+}
+
+export type Touches = {
+    [key: string]: Positions
+}
 
 export class MouseComponent extends Component {
-    stagePosition: { x: number; y: number } = { x: 0, y: 0 }
+    primaryPointer: Positions = {
+        stagePosition: [0, 0],
+        physicsPosition: [0, 0],
+    }
 
-    physicsPosition: { x: number; y: number } = { x: 0, y: 0 }
+    touches: Touches = {}
 
-    onUpHandlers = new Set<() => void>()
+    pinching = false
 
-    onDownHandlers = new Set<() => void>()
+    pinchInitialLength?: number
 
-    onMoveHandlers = new Set<() => void>()
+    pinchLength?: number
+
+    pinchATouch?: string
+
+    pinchBTouch?: string
+
+    onPinchStart = new Set<() => void>()
+
+    onPinchMove = new Set<() => void>()
+
+    onPinchEnd = new Set<() => void>()
+
+    onUp = new Set<(e: FederatedMouseEvent) => void>()
+
+    onDown = new Set<(e: FederatedMouseEvent) => void>()
+
+    onMove = new Set<(e: FederatedMouseEvent) => void>()
+
+    onWheel = new Set<(delta: number) => void>()
 
     construct() {
-        this.stagePosition.x = 0
-        this.stagePosition.y = 0
+        this.primaryPointer.stagePosition[0] = 0
+        this.primaryPointer.stagePosition[1] = 0
 
-        this.physicsPosition.x = 0
-        this.physicsPosition.y = 0
+        this.primaryPointer.physicsPosition[0] = 0
+        this.primaryPointer.physicsPosition[1] = 0
 
-        this.onUpHandlers.clear()
-        this.onDownHandlers.clear()
-        this.onMoveHandlers.clear()
+        this.touches = {}
+
+        this.onPinchStart.clear()
+        this.onPinchMove.clear()
+        this.onPinchEnd.clear()
+        this.onUp.clear()
+        this.onDown.clear()
+        this.onMove.clear()
     }
 }

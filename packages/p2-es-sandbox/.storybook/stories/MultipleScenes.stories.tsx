@@ -1,5 +1,4 @@
 import * as p2 from 'p2-es'
-import { GSSolver } from 'p2-es'
 import React from 'react'
 import { Sandbox, SandboxContext } from '../../src'
 
@@ -28,11 +27,13 @@ export const MultipleScenes = () => {
 
         const body = new p2.Body({
             mass: 1,
-            position: [0, 1]
-        });
-        body.addShape(new p2.Circle({
-            radius: 0.2,
-        }));
+            position: [0, 1],
+        })
+        body.addShape(
+            new p2.Circle({
+                radius: 0.2,
+            })
+        )
         world.addBody(body)
 
         return { world }
@@ -43,18 +44,20 @@ export const MultipleScenes = () => {
 
         const body = new p2.Body({
             mass: 1,
-            position: [0, 1]
-        });
-        body.addShape(new p2.Box({
-            width: 0.4,
-            height: 0.4
-        }));
+            position: [0, 1],
+        })
+        body.addShape(
+            new p2.Box({
+                width: 0.4,
+                height: 0.4,
+            })
+        )
         world.addBody(body)
 
         return { world }
     }
 
-    return <Sandbox setup={{ sphere, box }} />
+    return <Sandbox setup={{ 'Falling Sphere': sphere, 'Falling Box': box }} />
 }
 
 export default {

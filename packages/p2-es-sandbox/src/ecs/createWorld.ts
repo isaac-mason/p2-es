@@ -1,4 +1,3 @@
-import { createECS as createAranciniECS } from '@arancini/react'
 import { World } from 'arancini'
 import { PhysicsBodyComponent } from './components/PhysicsBodyComponent'
 import { PhysicsConstraintComponent } from './components/PhysicsConstraintComponent'
@@ -10,7 +9,7 @@ import { SettingsComponent } from './components/singletons/SettingsSingletonComp
 import { SpriteComponent } from './components/SpriteComponent'
 import { UpdateHandlerComponent } from './components/UpdateHandlerComponent'
 
-export const createECS = () => {
+export const createWorld = () => {
     const world = new World()
 
     world.registerComponent(PhysicsBodyComponent)
@@ -25,5 +24,5 @@ export const createECS = () => {
 
     world.init()
 
-    return createAranciniECS(world)
+    return world
 }

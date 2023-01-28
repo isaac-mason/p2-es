@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { useECS } from '../ecs/ecsContext'
 import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
+import { useECS } from '../hooks/useECS'
 import { loop } from '../utils/loop'
 
 export const Loop = () => {

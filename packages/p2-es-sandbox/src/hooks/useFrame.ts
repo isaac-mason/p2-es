@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { useECS } from '../ecs/ecsContext'
 import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
+import { useECS } from './useECS'
 
 export const useFrame = (
     fn: (delta: number) => void,

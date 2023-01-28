@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { EcsContextProvider } from '../ecs/ecsContext'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
-import { createECS } from '../ecs/createECS'
+import { createWorld } from '../ecs/createWorld'
+import { WorldContextProvider } from '../ecs/worldContext'
 import { useConst } from '../hooks/useConst'
 import { SandboxFunction } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
-import { Controls } from './interaction/Controls'
+import { Controls } from './controls/Controls'
 import { Loop } from './Loop'
 import { Physics } from './Physics'
 import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
@@ -103,7 +103,7 @@ export const Sandbox = ({
     controls = true,
     setup,
 }: SandboxProps) => {
-    const ecs = useConst(() => createECS())
+    const world = useConst(() => createWorld())
 
     const scenes = typeof setup === 'function' ? { default: setup } : setup
 
@@ -119,7 +119,7 @@ export const Sandbox = ({
 
     useEffect(() => {
         const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
-        const pixiEntity = ecs.world.create.entity()
+        const pixiEntity = world.create.entity()
         pixiEntity.add(PixiComponent, pixi)
 
         // eslint-disable-next-line no-console
@@ -133,7 +133,7 @@ export const Sandbox = ({
 
     return (
         <React.StrictMode>
-            <EcsContextProvider ecs={ecs}>
+            <WorldContextProvider world={world}>
                 <SandboxWrapper>
                     <SandboxHeader>
                         {title}{' '}
@@ -167,7 +167,7 @@ export const Sandbox = ({
                 <PixiRenderer />
 
                 <Loop />
-            </EcsContextProvider>
+            </WorldContextProvider>
         </React.StrictMode>
     )
 }
