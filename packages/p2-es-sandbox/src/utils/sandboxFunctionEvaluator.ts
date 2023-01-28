@@ -70,12 +70,21 @@ export const sandboxFunctionEvaluator = ({
         events,
     }
 
-    const { world } = sandboxFunction(sandboxContext)
+    // default view
+    frame(0, 0, 8, 6)
+
+    const { world, defaultTool } = sandboxFunction(sandboxContext)
 
     const destroySandbox = () => {
         window.removeEventListener('keydown', keyboardEventHandler)
         window.removeEventListener('keyup', keyboardEventHandler)
     }
 
-    return { world, sandboxUpdateHandlers, sandboxContext, destroySandbox }
+    return {
+        world,
+        defaultTool,
+        sandboxUpdateHandlers,
+        sandboxContext,
+        destroySandbox,
+    }
 }

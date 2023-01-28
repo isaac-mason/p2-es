@@ -57,7 +57,14 @@ export const MultipleScenes = () => {
         return { world }
     }
 
-    return <Sandbox setup={{ 'Falling Sphere': sphere, 'Falling Box': box }} />
+    return (
+        <Sandbox
+            setup={{
+                'Falling Sphere': { setup: sphere },
+                'Falling Box': { setup: box },
+            }}
+        />
+    )
 }
 
 export default {

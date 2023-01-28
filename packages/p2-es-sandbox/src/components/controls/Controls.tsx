@@ -1,10 +1,13 @@
 import { button, Leva, LevaPanel, useControls } from 'leva'
 import { ButtonInput } from 'leva/dist/declarations/src/types'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
-import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import {
+    Settings,
+    SettingsComponent,
+} from '../../ecs/components/singletons/SettingsSingletonComponent'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { Tool, Tools } from '../../types'
@@ -71,6 +74,8 @@ const useButtonGroupControls = (
 
 export type ControlsProps = {
     currentScene: string
+    tool: Tool
+    setTool: (tool: Tool) => void
     scenes: string[]
     setScene: (scene: string) => void
     reset: () => void
@@ -80,13 +85,13 @@ export const Controls = ({
     currentScene,
     scenes,
     setScene,
+    tool,
+    setTool,
     reset,
 }: ControlsProps) => {
     const ecs = useECS()
 
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
-
-    const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
 
     useButtonGroupControls('Scene', {
         options: scenes.map((scene) => ({ name: scene, value: scene })),
@@ -220,6 +225,28 @@ export const Controls = ({
         }
     }, [physicsWorldComponent, paused, drawContacts, drawAABBs, reset])
 
+    const args: [Settings] = useMemo(
+        () => [
+            {
+                timeStep,
+                maxSubSteps,
+                paused,
+                useInterpolatedPositions,
+                drawContacts,
+                drawAABBs,
+                debugPolygons,
+            },
+        ],
+        [
+            timeStep,
+            maxSubSteps,
+            paused,
+            useInterpolatedPositions,
+            drawContacts,
+            drawAABBs,
+            debugPolygons,
+        ]
+    )
     return (
         <>
             <ControlsWrapper>
@@ -248,20 +275,7 @@ export const Controls = ({
             <PointerObserver />
 
             <ecs.Entity>
-                <ecs.Component
-                    type={SettingsComponent}
-                    args={[
-                        {
-                            timeStep,
-                            maxSubSteps,
-                            paused,
-                            useInterpolatedPositions,
-                            drawContacts,
-                            drawAABBs,
-                            debugPolygons,
-                        },
-                    ]}
-                />
+                <ecs.Component type={SettingsComponent} args={args} />
             </ecs.Entity>
         </>
     )
