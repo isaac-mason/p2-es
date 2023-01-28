@@ -1,7 +1,7 @@
 import { Entity } from 'arancini'
 import * as p2 from 'p2-es'
 import { Body, Spring } from 'p2-es'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
 import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
@@ -17,6 +17,7 @@ import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
 import { SandboxFunction, Tool, Tools } from '../types'
+import { Scenes } from '../types/scene'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
 import { Controls } from './controls/Controls'
@@ -45,21 +46,6 @@ body.addShape(new p2.Circle({
 
 world.addBody(body);
 `
-
-export type SandboxSetup =
-    | SandboxFunction
-    | Record<string, { setup: SandboxFunction }>
-
-export type SandboxProps = {
-    setup: SandboxSetup
-
-    title?: string
-
-    /**
-     * @default true
-     */
-    controls?: boolean
-}
 
 const SandboxWrapper = styled.div`
     display: flex;
@@ -112,30 +98,33 @@ const SandboxCanvasWrapper = styled.div`
     }
 `
 
+export type SandboxProps = {
+    setup: SandboxFunction | Scenes
+
+    title?: string
+
+    /**
+     * @default true
+     */
+    controls?: boolean
+}
+
 const SandboxInner = ({
     title = 'p2-es sandbox',
     controls = true,
     setup,
 }: SandboxProps) => {
+    const [version, setVersion] = useState(0)
+
     const ecs = useECS()
 
     const canvasWrapperElement = useRef<HTMLDivElement>(null)
 
-    const scenes = useMemo(
-        () => (typeof setup === 'function' ? { default: { setup } } : setup),
-        [setup]
-    )
-    const sceneNames = useMemo(() => Object.keys(scenes), [scenes])
-    const [currentScene, setCurrentScene] = useState(sceneNames[0])
-    const [version, setVersion] = useState(0)
-
-    const sandboxFunction = scenes[currentScene].setup
+    const scenes = typeof setup === 'function' ? { default: { setup } } : setup
+    const sceneNames = Object.keys(scenes)
+    const [scene, setScene] = useState(sceneNames[0])
 
     const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
-
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const settingsComponent = useSingletonComponent(SettingsComponent)
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
 
     const [sandboxUpdateHandlers, setSandboxUpdateHandlers] = useState<Set<
         (delta: number) => void
@@ -143,6 +132,10 @@ const SandboxInner = ({
 
     const bodyEntities: Map<Body, Entity> = useConst(() => new Map())
     const springEntities: Map<Spring, Entity> = useConst(() => new Map())
+
+    const pixiComponent = useSingletonComponent(PixiComponent)
+    const settingsComponent = useSingletonComponent(SettingsComponent)
+    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
 
     /* create the pixi application */
     useEffect(() => {
@@ -170,14 +163,17 @@ const SandboxInner = ({
             updateHandlers,
             sandboxContext,
             destroySandbox,
-        } = sandboxFunctionEvaluator({ pixi: pixiComponent, sandboxFunction })
+        } = sandboxFunctionEvaluator({
+            pixi: pixiComponent,
+            sandboxFunction: scenes[scene].setup,
+        })
 
         // set the default tool
         if (defaultTool) {
             setTool(defaultTool)
         }
 
-        // create physics body and spring entities
+        // create entities for existing physics bodies and springs
         const addBodyEntity = (body: Body) => {
             const entity = ecs.world.create.entity([
                 { type: PhysicsBodyComponent, args: [body] },
@@ -260,7 +256,7 @@ const SandboxInner = ({
                 entity.destroy()
             })
         }
-    }, [pixiComponent, settingsComponent, currentScene, version])
+    }, [pixiComponent, settingsComponent, scene, version])
 
     /* step the physics world */
     useFrame(
@@ -279,7 +275,7 @@ const SandboxInner = ({
         STAGES.PHYSICS
     )
 
-    /* run sandbox update handlers */
+    /* sandbox update handlers */
     useFrame(
         (delta) => {
             if (!sandboxUpdateHandlers) return
@@ -292,9 +288,10 @@ const SandboxInner = ({
 
     return (
         <>
+            {/* UI */}
             <SandboxWrapper>
                 <SandboxHeader>
-                    {title} {sceneNames.length > 1 ? ` - ${currentScene}` : ''}
+                    {title} {sceneNames.length > 1 ? ` - ${scene}` : ''}
                 </SandboxHeader>
                 <SandboxMain>
                     <SandboxCanvasWrapper ref={canvasWrapperElement} />
@@ -303,20 +300,22 @@ const SandboxInner = ({
                         <Controls
                             tool={tool}
                             setTool={(t) => setTool(t)}
-                            currentScene={currentScene}
+                            currentScene={scene}
                             scenes={sceneNames}
-                            setScene={(sceneName) => setCurrentScene(sceneName)}
+                            setScene={(sceneName) => setScene(sceneName)}
                             reset={() => setVersion((v) => v + 1)}
                         />
                     ) : null}
                 </SandboxMain>
             </SandboxWrapper>
 
+            {/* Pixi */}
             <PhysicsBodyRenderer />
             <PhysicsContactRenderer />
             <PhysicsSpringRenderer />
             <PhysicsAABBRenderer />
 
+            {/* Update loop */}
             <Loop />
         </>
     )
