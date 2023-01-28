@@ -1,14 +1,17 @@
 import * as p2 from 'p2-es'
 import { Pixi } from '../ecs/components/singletons/PixiComponent'
+import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
 import { SandboxContext, SandboxEventMap, SandboxFunction } from '../types'
 
 export type SandboxFunctionEvaluatorProps = {
     pixi: Pixi
+    pointer: PointerComponent
     sandboxFunction: SandboxFunction
 }
 
 export const sandboxFunctionEvaluator = ({
     pixi,
+    pointer,
     sandboxFunction,
 }: SandboxFunctionEvaluatorProps) => {
     const { application, container } = pixi
@@ -64,6 +67,7 @@ export const sandboxFunctionEvaluator = ({
     }
 
     const sandboxContext: SandboxContext = {
+        pointer,
         centerCamera,
         frame,
         onUpdate,
@@ -73,11 +77,15 @@ export const sandboxFunctionEvaluator = ({
     // default view
     frame(0, 0, 8, 6)
 
-    const { world, defaultTool } = sandboxFunction(sandboxContext)
+    const { world, defaultTool, teardown } = sandboxFunction(sandboxContext)
 
     const destroySandbox = () => {
         window.removeEventListener('keydown', keyboardEventHandler)
         window.removeEventListener('keyup', keyboardEventHandler)
+
+        if (teardown) {
+            teardown()
+        }
     }
 
     return {

@@ -1,6 +1,9 @@
+import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
 import type { SandboxEventMap } from './events'
 
 export type SandboxContext = {
+    pointer: PointerComponent
+
     centerCamera: (x: number, y: number) => void
 
     frame: (

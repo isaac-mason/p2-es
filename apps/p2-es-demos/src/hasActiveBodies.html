@@ -19,67 +19,80 @@
                 z-index: 1;
             }
         </style>
+        <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
+            import { createSandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
-            import { Demo } from './js/Demo.js'
 
             const radius = 0.15
 
             // Create demo application
-            new Demo(function () {
-                const world = new p2.World({
-                    gravity: [0, -10],
-                })
-
-                this.setWorld(world)
-
-                // Create circles
-                const circleBodyOne = new p2.Body({
-                    mass: 1,
-                    position: [0, 0.6],
-                    damping: 0.01,
-                })
-                circleBodyOne.addShape(
-                    new p2.Circle({
-                        radius,
+            createSandbox(
+                (context) => {
+                    const world = new p2.World({
+                        gravity: [0, -10],
                     })
-                )
-                circleBodyOne.allowSleep = true
-                circleBodyOne.sleepSpeedLimit = 1
-                circleBodyOne.sleepTimeLimit = 1
-                circleBodyOne.damping = 0.2
-                world.addBody(circleBodyOne)
 
-                const circleBodyTwo = new p2.Body({
-                    mass: 1,
-                    position: [0, 0.3],
-                    damping: 0.01,
-                })
-                circleBodyTwo.addShape(
-                    new p2.Circle({
-                        radius,
+                    // Create circles
+                    const circleBodyOne = new p2.Body({
+                        mass: 1,
+                        position: [0, 0.6],
+                        damping: 0.01,
                     })
-                )
-                circleBodyTwo.allowSleep = true
-                circleBodyTwo.sleepSpeedLimit = 1
-                circleBodyTwo.sleepTimeLimit = 1
-                circleBodyTwo.damping = 0.2
-                world.addBody(circleBodyTwo)
+                    circleBodyOne.addShape(
+                        new p2.Circle({
+                            radius,
+                        })
+                    )
+                    circleBodyOne.allowSleep = true
+                    circleBodyOne.sleepSpeedLimit = 1
+                    circleBodyOne.sleepTimeLimit = 1
+                    circleBodyOne.damping = 0.2
+                    world.addBody(circleBodyOne)
 
-                // Create ground
-                const plane = new p2.Body({
-                    position: [0, -1],
-                })
-                plane.addShape(new p2.Plane())
-                world.addBody(plane)
+                    const circleBodyTwo = new p2.Body({
+                        mass: 1,
+                        position: [0, 0.3],
+                        damping: 0.01,
+                    })
+                    circleBodyTwo.addShape(
+                        new p2.Circle({
+                            radius,
+                        })
+                    )
+                    circleBodyTwo.allowSleep = true
+                    circleBodyTwo.sleepSpeedLimit = 1
+                    circleBodyTwo.sleepTimeLimit = 1
+                    circleBodyTwo.damping = 0.2
+                    world.addBody(circleBodyTwo)
 
-                // Allow sleeping
-                world.sleepMode = p2.World.BODY_SLEEPING
+                    // Create ground
+                    const plane = new p2.Body({
+                        position: [0, -1],
+                    })
+                    plane.addShape(new p2.Plane())
+                    world.addBody(plane)
 
-                setInterval(() => {
-                    document.querySelector('#hasActiveBodies').textContent = `world.hasActiveBodies = ${world.hasActiveBodies}`
-                }, 500)
-            })
+                    // Allow sleeping
+                    world.sleepMode = p2.World.BODY_SLEEPING
+
+                    const updateHasActiveBodiesText = () => {
+                        document.querySelector(
+                            '#hasActiveBodies'
+                        ).textContent = `world.hasActiveBodies = ${world.hasActiveBodies}`
+                    }
+
+                    context.onUpdate.add(updateHasActiveBodiesText)
+
+                    return {
+                        world,
+                        teardown: () => {
+                            context.onUpdate.remove(updateHasActiveBodiesText)
+                        },
+                    }
+                },
+                { domElement: document.getElementById('demo') }
+            )
         </script>
     </body>
 </html>

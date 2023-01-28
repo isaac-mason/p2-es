@@ -13,7 +13,6 @@ import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { Tool, Tools } from '../../types'
 import { CircleTool } from './CircleTool'
 import { PickPanTool } from './PickPanTool'
-import { PointerObserver } from './PointerObserver'
 import { PolygonTool } from './PolygonTool'
 import { RectangleTool } from './RectangleTool'
 
@@ -271,8 +270,6 @@ export const Controls = ({
             {tool === Tools.POLYGON && <PolygonTool />}
             {tool === Tools.CIRCLE && <CircleTool />}
             {tool === Tools.RECTANGLE && <RectangleTool />}
-
-            <PointerObserver />
 
             <ecs.Entity>
                 <ecs.Component type={SettingsComponent} args={args} />

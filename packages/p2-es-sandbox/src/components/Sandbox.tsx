@@ -8,6 +8,7 @@ import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent'
 import { PhysicsWorldComponent } from '../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
+import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
 import { SettingsComponent } from '../ecs/components/singletons/SettingsSingletonComponent'
 import { createWorld } from '../ecs/createWorld'
 import { WorldContextProvider } from '../ecs/worldContext'
@@ -16,11 +17,11 @@ import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
-import { SandboxFunction, Tool, Tools } from '../types'
-import { Scenes } from '../types/scene'
+import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
 import { Controls } from './controls/Controls'
+import { PointerObserver } from './controls/PointerObserver'
 import { Loop } from './Loop'
 import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
 import { PhysicsBodyRenderer } from './pixi/PhysicsBodyRenderer'
@@ -136,6 +137,7 @@ const SandboxInner = ({
     const pixiComponent = useSingletonComponent(PixiComponent)
     const settingsComponent = useSingletonComponent(SettingsComponent)
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
+    const pointerComponent = useSingletonComponent(PointerComponent)
 
     /* create the pixi application */
     useEffect(() => {
@@ -154,7 +156,7 @@ const SandboxInner = ({
 
     /* create the current scene */
     useEffect(() => {
-        if (!pixiComponent || !settingsComponent) return
+        if (!pixiComponent || !settingsComponent || !pointerComponent) return
 
         // evaluate the current scene's sandbox function
         const {
@@ -165,6 +167,7 @@ const SandboxInner = ({
             destroySandbox,
         } = sandboxFunctionEvaluator({
             pixi: pixiComponent,
+            pointer: pointerComponent,
             sandboxFunction: scenes[scene].setup,
         })
 
@@ -256,7 +259,7 @@ const SandboxInner = ({
                 entity.destroy()
             })
         }
-    }, [pixiComponent, settingsComponent, scene, version])
+    }, [pixiComponent, settingsComponent, pointerComponent, scene, version])
 
     /* step the physics world */
     useFrame(
@@ -308,6 +311,9 @@ const SandboxInner = ({
                     ) : null}
                 </SandboxMain>
             </SandboxWrapper>
+
+            {/* Interaction */}
+            <PointerObserver />
 
             {/* Pixi */}
             <PhysicsBodyRenderer />
