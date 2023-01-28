@@ -19,7 +19,7 @@ export const PhysicsContactRenderer = () => {
 
             const { settings } = settingsComponent
             const { graphics, container } = pixiComponent
-            const { world: world } = physicsWorldComponent
+            const { world } = physicsWorldComponent
 
             // Draw contacts
             if (settings.drawContacts) {

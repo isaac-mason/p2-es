@@ -1,7 +1,30 @@
 import { useEffect } from 'react'
 import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
 import { useECS } from '../hooks/useECS'
-import { loop } from '../utils/loop'
+
+const loop = (fn: (delta: number) => void) => {
+    let animationFrameRequest = 0
+    let previousTime: undefined | number
+
+    const animate = (time: number) => {
+        const timeMs = time / 1000
+        if (previousTime !== undefined) {
+            const delta = timeMs - previousTime
+
+            const clampedDelta = Math.min(delta, 1)
+
+            fn(clampedDelta)
+        }
+        previousTime = timeMs
+        animationFrameRequest = requestAnimationFrame(animate)
+    }
+
+    animationFrameRequest = requestAnimationFrame(animate)
+
+    return () => {
+        cancelAnimationFrame(animationFrameRequest)
+    }
+}
 
 export const Loop = () => {
     const ecs = useECS()
@@ -11,26 +34,26 @@ export const Loop = () => {
             UpdateHandlerComponent,
         ])
 
-        const sortedHandlers = () => {
-            return updateHandlersQuery.entities
+        let sortedUpdateHandlers: UpdateHandlerComponent[] = []
+
+        const sortHandlers = () => {
+            sortedUpdateHandlers = updateHandlersQuery.entities
                 .map((e) => e.get(UpdateHandlerComponent))
                 .sort((a, b) => a.priority - b.priority)
         }
 
-        const sortedUpdateHandlers = sortedHandlers()
-
-        updateHandlersQuery.onEntityAdded.add(sortedHandlers)
-        updateHandlersQuery.onEntityRemoved.add(sortedHandlers)
+        updateHandlersQuery.onEntityAdded.add(() => sortHandlers())
+        updateHandlersQuery.onEntityRemoved.add(() => sortHandlers())
 
         const stop = loop((delta) => {
             sortedUpdateHandlers.forEach((handler) => handler.fn(delta))
         })
 
         return () => {
-            stop()
-            updateHandlersQuery.onEntityAdded.remove(sortedHandlers)
-            updateHandlersQuery.onEntityRemoved.remove(sortedHandlers)
+            updateHandlersQuery.onEntityAdded.remove(sortHandlers)
+            updateHandlersQuery.onEntityRemoved.remove(sortHandlers)
             updateHandlersQuery.destroy()
+            stop()
         }
     }, [])
 

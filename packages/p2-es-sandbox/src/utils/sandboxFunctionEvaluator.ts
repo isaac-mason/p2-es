@@ -13,7 +13,7 @@ export const sandboxFunctionEvaluator = ({
 }: SandboxFunctionEvaluatorProps) => {
     const { application, container } = pixi
 
-    const sandboxUpdateHandlers = new Set<(delta: number) => void>()
+    const updateHandlers = new Set<(delta: number) => void>()
 
     const eventEmitter = new p2.EventEmitter<SandboxEventMap>()
 
@@ -44,10 +44,10 @@ export const sandboxFunctionEvaluator = ({
 
     const onUpdate = {
         add: (fn: (delta: number) => void) => {
-            sandboxUpdateHandlers.add(fn)
+            updateHandlers.add(fn)
         },
         remove: (fn: (delta: number) => void) => {
-            sandboxUpdateHandlers.delete(fn)
+            updateHandlers.delete(fn)
         },
     }
 
@@ -83,7 +83,7 @@ export const sandboxFunctionEvaluator = ({
     return {
         world,
         defaultTool,
-        sandboxUpdateHandlers,
+        updateHandlers,
         sandboxContext,
         destroySandbox,
     }
