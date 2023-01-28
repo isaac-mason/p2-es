@@ -1,5 +1,4 @@
 export const loop = (fn: (delta: number) => void) => {
-    // animation loop
     let animationFrameRequest = 0
     let previousTime: undefined | number
 

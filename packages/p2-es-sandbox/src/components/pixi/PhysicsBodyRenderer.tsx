@@ -9,8 +9,8 @@ import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
+import { randomPastelHex } from '../../utils/color/randomPastelHex'
 import { drawRenderable } from '../../utils/pixi/drawRenderable'
-import { randomPastelHex } from '../../utils/randomPastelHex'
 
 const LINE_WIDTH = 0.01
 const SLEEP_OPACITY = 0.2
