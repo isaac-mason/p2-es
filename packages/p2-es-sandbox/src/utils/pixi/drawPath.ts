@@ -5,10 +5,10 @@ export type DrawPathProps = {
     graphics: PIXI.Graphics
     path: number[][]
     lineColor: number
-    fillColor: number
+    fillColor?: number
     lineWidth: number
-    isSleeping: boolean
-    sleepOpacity: number
+    isSleeping?: boolean
+    sleepOpacity?: number
 }
 
 export const drawPath = ({

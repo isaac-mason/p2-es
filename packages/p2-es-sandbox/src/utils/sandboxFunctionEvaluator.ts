@@ -11,7 +11,7 @@ export const sandboxFunctionEvaluator = ({
     pixi,
     sandboxFunction,
 }: SandboxFunctionEvaluatorProps) => {
-    const { renderer, container } = pixi
+    const { application, container } = pixi
 
     const sandboxUpdateHandlers = new Set<(delta: number) => void>()
 
@@ -24,17 +24,19 @@ export const sandboxFunctionEvaluator = ({
     window.addEventListener('keyup', keyboardEventHandler)
 
     const centerCamera = (x: number, y: number) => {
-        container.position.x = renderer.width / 2 - container.scale.x * x
-        container.position.y = renderer.height / 2 - container.scale.y * y
+        container.position.x =
+            application.renderer.width / 2 - container.scale.x * x
+        container.position.y =
+            application.renderer.height / 2 - container.scale.y * y
     }
 
     const frame = (x: number, y: number, w: number, h: number) => {
-        const ratio = renderer.width / renderer.height
+        const ratio = application.renderer.width / application.renderer.height
         if (ratio < w / h) {
-            container.scale.x = renderer.width / w
+            container.scale.x = application.renderer.width / w
             container.scale.y = -container.scale.x
         } else {
-            container.scale.y = -renderer.height / h
+            container.scale.y = -application.renderer.height / h
             container.scale.x = -container.scale.y
         }
         centerCamera(x, y)

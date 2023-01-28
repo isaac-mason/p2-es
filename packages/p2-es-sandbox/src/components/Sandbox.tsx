@@ -14,7 +14,7 @@ import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
 import { PhysicsBodyRenderer } from './pixi/PhysicsBodyRenderer'
 import { PhysicsContactRenderer } from './pixi/PhysicsContactRenderer'
 import { PhysicsSpringRenderer } from './pixi/PhysicsSpringRenderer'
-import { PixiRenderer } from './pixi/PixiRenderer'
+import { PixiApplication } from './pixi/PixiApplication'
 
 const CONSOLE_MESSAGE = `
 === p2-es ===
@@ -89,7 +89,7 @@ const SandboxMain = styled.div`
 
 const SandboxCanvasWrapper = styled.div`
     flex: none;
-    height: calc(100% - 10em);
+    height: calc(100vh - 10em);
     width: 100%;
 
     ${up('md')} {
@@ -164,7 +164,7 @@ export const Sandbox = ({
                 <PhysicsContactRenderer />
                 <PhysicsSpringRenderer />
                 <PhysicsAABBRenderer />
-                <PixiRenderer />
+                <PixiApplication />
 
                 <Loop />
             </WorldContextProvider>

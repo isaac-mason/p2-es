@@ -205,6 +205,8 @@ export class Demo extends p2.EventEmitter {
                 path2.push([v[0], v[1]])
             }
 
+            console.log(path2)
+
             this.drawPath(g, path2, 0xff0000, false, this.lineWidth, false)
         })
 

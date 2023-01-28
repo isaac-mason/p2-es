@@ -1,9 +1,9 @@
 import { Component } from 'arancini'
-import { Renderer, Container, Graphics } from 'pixi.js'
+import { Application, Container, Graphics } from 'pixi.js'
 
 export type Pixi = {
     canvasElement: HTMLCanvasElement
-    renderer: Renderer
+    application: Application
     stage: Container
     container: Container
     background: Graphics
@@ -11,13 +11,14 @@ export type Pixi = {
         aabb: Graphics
         contacts: Graphics
         pick: Graphics
+        drawShape: Graphics
     }
 }
 
 export class PixiComponent extends Component {
     canvasElement!: HTMLCanvasElement
 
-    renderer!: Renderer
+    application!: Application
 
     stage!: Container
 
@@ -25,15 +26,11 @@ export class PixiComponent extends Component {
 
     background!: Graphics
 
-    graphics!: {
-        aabb: Graphics
-        contacts: Graphics
-        pick: Graphics
-    }
+    graphics!: Pixi['graphics']
 
     construct(pixi: Pixi) {
         this.canvasElement = pixi.canvasElement
-        this.renderer = pixi.renderer
+        this.application = pixi.application
         this.stage = pixi.stage
         this.container = pixi.container
         this.background = pixi.background

@@ -1,14 +1,14 @@
 import { vec2 } from 'p2-es'
 import { FederatedEvent, FederatedMouseEvent } from 'pixi.js'
 import { useEffect } from 'react'
-import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
+import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 
 const tmpVec2 = { x: 0, y: 0 }
 
-export const MouseObserver = () => {
+export const PointerObserver = () => {
     const ecs = useECS()
 
     const pixi = useSingletonComponent(PixiComponent)
@@ -16,8 +16,8 @@ export const MouseObserver = () => {
     useEffect(() => {
         if (!pixi) return
 
-        const mouseEntity = ecs.world.create.entity()
-        const mouse = mouseEntity.add(MouseComponent)
+        const pointerEntity = ecs.world.create.entity()
+        const pointer = pointerEntity.add(PointerComponent)
 
         const getPhysicsPosition = (stagePosition: {
             x: number
@@ -30,17 +30,17 @@ export const MouseObserver = () => {
             return [x, y]
         }
 
-        const updateMouseComponentPositions = (stagePosition: {
+        const updatePrimaryPointerPosition = (stagePosition: {
             x: number
             y: number
         }) => {
-            mouse.primaryPointer.stagePosition[0] = stagePosition.x
-            mouse.primaryPointer.stagePosition[1] = stagePosition.y
+            pointer.primaryPointer.stagePosition[0] = stagePosition.x
+            pointer.primaryPointer.stagePosition[1] = stagePosition.y
 
             const [physicsX, physicsY] = getPhysicsPosition(stagePosition)
 
-            mouse.primaryPointer.physicsPosition[0] = physicsX
-            mouse.primaryPointer.physicsPosition[1] = physicsY
+            pointer.primaryPointer.physicsPosition[0] = physicsX
+            pointer.primaryPointer.physicsPosition[1] = physicsY
         }
 
         const updateTouches = (e: FederatedMouseEvent) => {
@@ -55,95 +55,95 @@ export const MouseObserver = () => {
                     ...getPhysicsPosition(e.global),
                 ]
 
-                mouse.touches[touchmove.nativeEvent.pointerId] = {
+                pointer.touches[touchmove.nativeEvent.pointerId] = {
                     stagePosition,
                     physicsPosition,
                 }
             } else if (e.nativeEvent.type === 'touchend') {
                 const touchend = e as FederatedEvent<PointerEvent>
-                delete mouse.touches[touchend.nativeEvent.pointerId]
+                delete pointer.touches[touchend.nativeEvent.pointerId]
             }
         }
 
         const updatePinch = () => {
-            const nTouches = Object.keys(mouse.touches).length
+            const nTouches = Object.keys(pointer.touches).length
 
-            if (!mouse.pinching && nTouches > 1) {
-                mouse.pinching = true
+            if (!pointer.pinching && nTouches > 1) {
+                pointer.pinching = true
 
-                const touchKeys = Object.keys(mouse.touches)
+                const touchKeys = Object.keys(pointer.touches)
                 const [touchAKey, touchBKey] = touchKeys
 
-                const touchA = mouse.touches[touchAKey]
-                const touchB = mouse.touches[touchBKey]
+                const touchA = pointer.touches[touchAKey]
+                const touchB = pointer.touches[touchBKey]
 
-                mouse.pinchATouch = touchAKey
-                mouse.pinchBTouch = touchBKey
+                pointer.pinchATouch = touchAKey
+                pointer.pinchBTouch = touchBKey
 
-                mouse.pinchLength = vec2.distance(
+                pointer.pinchLength = vec2.distance(
                     touchA.physicsPosition,
                     touchB.physicsPosition
                 )
 
-                mouse.pinchInitialLength = mouse.pinchLength
+                pointer.pinchInitialLength = pointer.pinchLength
 
-                mouse.onPinchStart.forEach((fn) => fn())
-            } else if (mouse.pinching) {
+                pointer.onPinchStart.forEach((fn) => fn())
+            } else if (pointer.pinching) {
                 if (
-                    mouse.pinchATouch &&
-                    mouse.pinchBTouch &&
-                    mouse.touches[mouse.pinchATouch] &&
-                    mouse.touches[mouse.pinchBTouch]
+                    pointer.pinchATouch &&
+                    pointer.pinchBTouch &&
+                    pointer.touches[pointer.pinchATouch] &&
+                    pointer.touches[pointer.pinchBTouch]
                 ) {
-                    const touchA = mouse.touches[mouse.pinchATouch]
-                    const touchB = mouse.touches[mouse.pinchBTouch]
+                    const touchA = pointer.touches[pointer.pinchATouch]
+                    const touchB = pointer.touches[pointer.pinchBTouch]
 
-                    mouse.pinchLength = vec2.distance(
+                    pointer.pinchLength = vec2.distance(
                         touchA.physicsPosition,
                         touchB.physicsPosition
                     )
 
-                    mouse.onPinchMove.forEach((fn) => fn())
+                    pointer.onPinchMove.forEach((fn) => fn())
                 } else {
-                    mouse.pinching = false
-                    mouse.pinchATouch = undefined
-                    mouse.pinchBTouch = undefined
-                    mouse.pinchLength = 0
-                    mouse.pinchInitialLength = 0
+                    pointer.pinching = false
+                    pointer.pinchATouch = undefined
+                    pointer.pinchBTouch = undefined
+                    pointer.pinchLength = 0
+                    pointer.pinchInitialLength = 0
 
-                    mouse.onPinchEnd.forEach((fn) => fn())
+                    pointer.onPinchEnd.forEach((fn) => fn())
                 }
             }
         }
 
         const moveHandler = ((e: FederatedMouseEvent) => {
-            updateMouseComponentPositions(e.global)
+            updatePrimaryPointerPosition(e.global)
 
             updateTouches(e)
 
             updatePinch()
 
-            mouse.onMove.forEach((handler) => handler(e))
+            pointer.onMove.forEach((handler) => handler(e))
         }) as never
 
         const downHandler = ((e: FederatedMouseEvent) => {
-            updateMouseComponentPositions(e.global)
+            updatePrimaryPointerPosition(e.global)
 
             updateTouches(e)
 
             updatePinch()
 
-            mouse.onDown.forEach((handler) => handler(e))
+            pointer.onDown.forEach((handler) => handler(e))
         }) as never
 
         const upHandler = ((e: FederatedMouseEvent) => {
-            updateMouseComponentPositions(e.global)
+            updatePrimaryPointerPosition(e.global)
 
             updateTouches(e)
 
             updatePinch()
 
-            mouse.onUp.forEach((handler) => handler(e))
+            pointer.onUp.forEach((handler) => handler(e))
         }) as never
 
         pixi.canvasElement.ontouchmove = (e: Event) => {
@@ -169,7 +169,7 @@ export const MouseObserver = () => {
             // delta should not be greater than 2
             delta = Math.min(Math.max(delta / 2, -1), 1)
 
-            mouse.onWheel.forEach((handler) => handler(delta))
+            pointer.onWheel.forEach((handler) => handler(delta))
         }
 
         pixi.stage.addEventListener('pointermove', moveHandler, false)
@@ -183,7 +183,7 @@ export const MouseObserver = () => {
             pixi.stage.removeEventListener('pointerup', upHandler)
             pixi.canvasElement.removeEventListener('wheel', wheelHandler, false)
 
-            mouseEntity.destroy()
+            pointerEntity.destroy()
         }
     }, [pixi])
 

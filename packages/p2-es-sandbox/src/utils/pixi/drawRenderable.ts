@@ -28,8 +28,6 @@ export const drawRenderable = ({
     debugPolygons,
     sleepOpacity,
 }: DrawRenderableProps) => {
-    const lw = lineWidth
-
     sprite.drawnSleeping = false
     sprite.drawnFillColor = fillColor
     sprite.drawnLineColor = lineColor
@@ -42,11 +40,16 @@ export const drawRenderable = ({
         }
 
         if (concavePath && !debugPolygons) {
-            const path = []
-            for (let j = 0; j !== concavePath.length; j++) {
-                const v = concavePath[j]
-                path.push([v[0], v[1]])
-            }
+            const path = concavePath.map((v) => [v[0], v[1]])
+            console.log({
+                graphics: sprite.graphics,
+                path: path.map((p) => [...p]),
+                lineColor,
+                fillColor,
+                isSleeping,
+                sleepOpacity,
+                lineWidth,
+            })
             drawPath({
                 graphics: sprite.graphics,
                 path,
@@ -81,7 +84,7 @@ export const drawRenderable = ({
                         x: offset[0],
                         y: offset[1],
                         angle,
-                        radius: 2 * lw,
+                        radius: 2 * lineWidth,
                         lineColor,
                         fillColor,
                         lineWidth,
@@ -97,8 +100,8 @@ export const drawRenderable = ({
                         lineColor,
                         fillColor,
                         lineWidth,
-                        diagMargin: lw * 10,
-                        diagSize: lw * 10,
+                        diagMargin: lineWidth * 10,
+                        diagSize: lineWidth * 10,
                         maxLength: 100,
                     })
                 } else if (child instanceof p2.Line) {

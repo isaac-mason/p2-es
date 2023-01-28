@@ -19,7 +19,7 @@ export const PhysicsAABBRenderer = () => {
 
             const { settings } = settingsComponent
             const { graphics, container } = pixiComponent
-            const { physicsWorld: world } = physicsWorldComponent
+            const { world: world } = physicsWorldComponent
 
             if (settings.drawAABBs) {
                 graphics.aabb.clear()

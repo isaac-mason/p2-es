@@ -10,7 +10,7 @@ export type Touches = {
     [key: string]: Positions
 }
 
-export class MouseComponent extends Component {
+export class PointerComponent extends Component {
     primaryPointer: Positions = {
         stagePosition: [0, 0],
         physicsPosition: [0, 0],

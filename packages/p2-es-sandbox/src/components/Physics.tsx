@@ -36,19 +36,15 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
     useEffect(() => {
         if (!pixiComponent || !settingsComponent) return
 
-        const {
-            world: physicsWorld,
-            sandboxUpdateHandlers,
-            sandboxContext,
-            destroySandbox,
-        } = sandboxFunctionEvaluator({ pixi: pixiComponent, sandboxFunction })
+        const { world, sandboxUpdateHandlers, sandboxContext, destroySandbox } =
+            sandboxFunctionEvaluator({ pixi: pixiComponent, sandboxFunction })
 
         const physicsEntity = ecs.world.create.entity()
-        physicsEntity.add(PhysicsWorldComponent, physicsWorld)
+        physicsEntity.add(PhysicsWorldComponent, world)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const globalWindow = window as any
-        globalWindow.world = physicsWorld
+        globalWindow.world = world
         globalWindow.p2 = p2
         globalWindow.sandbox = sandboxContext
 
@@ -78,37 +74,37 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
             entity?.destroy()
         }
 
-        for (const body of physicsWorld.bodies) {
+        for (const body of world.bodies) {
             addBody(body)
         }
 
-        for (const spring of physicsWorld.springs) {
+        for (const spring of world.springs) {
             addSpring(spring)
         }
 
         const addBodyHandler = ({ body }: { body: Body }) => addBody(body)
-        physicsWorld.on('addBody', addBodyHandler)
+        world.on('addBody', addBodyHandler)
 
         const addSpringHandler = ({ spring }: { spring: Spring }) =>
             addSpring(spring)
-        physicsWorld.on('addSpring', addSpringHandler)
+        world.on('addSpring', addSpringHandler)
 
         const removeBodyHandler = ({ body }: { body: Body }) => removeBody(body)
-        physicsWorld.on('removeBody', removeBodyHandler)
+        world.on('removeBody', removeBodyHandler)
 
         const removeSpringHandler = ({ spring }: { spring: Spring }) =>
             removeSpring(spring)
-        physicsWorld.on('removeSpring', removeSpringHandler)
+        world.on('removeSpring', removeSpringHandler)
 
         setSandboxUpdate(sandboxUpdateHandlers)
 
         return () => {
             setSandboxUpdate(null)
 
-            physicsWorld.off('addBody', addBodyHandler)
-            physicsWorld.off('addSpring', addSpringHandler)
-            physicsWorld.off('removeBody', removeBodyHandler)
-            physicsWorld.off('removeSpring', removeSpringHandler)
+            world.off('addBody', addBodyHandler)
+            world.off('addSpring', addSpringHandler)
+            world.off('removeBody', removeBodyHandler)
+            world.off('removeSpring', removeSpringHandler)
 
             destroySandbox()
 
@@ -132,11 +128,11 @@ export const Physics = ({ sandboxFunction }: PhysicsProps) => {
                 settings: { timeStep, maxSubSteps, paused },
             } = settingsComponent
 
-            const { physicsWorld } = physicsWorldComponent
+            const { world } = physicsWorldComponent
 
             if (paused) return
 
-            physicsWorld.step(timeStep, delta, maxSubSteps)
+            world.step(timeStep, delta, maxSubSteps)
         },
         [settingsComponent, physicsWorldComponent],
         STAGES.PHYSICS

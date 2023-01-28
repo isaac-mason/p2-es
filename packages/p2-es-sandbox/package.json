@@ -25,7 +25,7 @@
   "dependencies": {
     "@arancini/react": "^1.0.1",
     "@pixi/core": "7.0.5",
-    "arancini": "^1.0.1",
+    "arancini": "^1.1.0",
     "leva": "^0.9.34",
     "pixi.js": "^7.0.5",
     "react": "^18.2.0",

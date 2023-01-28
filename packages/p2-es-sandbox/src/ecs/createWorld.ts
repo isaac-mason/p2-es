@@ -2,7 +2,7 @@ import { World } from 'arancini'
 import { PhysicsBodyComponent } from './components/PhysicsBodyComponent'
 import { PhysicsConstraintComponent } from './components/PhysicsConstraintComponent'
 import { PhysicsSpringComponent } from './components/PhysicsSpringComponent'
-import { MouseComponent } from './components/singletons/MouseComponent'
+import { PointerComponent } from './components/singletons/PointerComponent'
 import { PhysicsWorldComponent } from './components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from './components/singletons/PixiComponent'
 import { SettingsComponent } from './components/singletons/SettingsSingletonComponent'
@@ -19,7 +19,7 @@ export const createWorld = () => {
     world.registerComponent(PixiComponent)
     world.registerComponent(SettingsComponent)
     world.registerComponent(SpriteComponent)
-    world.registerComponent(MouseComponent)
+    world.registerComponent(PointerComponent)
     world.registerComponent(UpdateHandlerComponent)
 
     world.init()

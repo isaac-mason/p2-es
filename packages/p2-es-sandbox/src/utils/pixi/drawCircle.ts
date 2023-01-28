@@ -7,11 +7,11 @@ export type DrawCircleProps = {
     y: number
     angle: number
     radius: number
-    fillColor: number
+    fillColor?: number
     lineColor: number
     lineWidth: number
-    isSleeping: boolean
-    sleepOpacity: number
+    isSleeping?: boolean
+    sleepOpacity?: number
 }
 
 export const drawCircle = ({

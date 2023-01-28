@@ -15,6 +15,5 @@ export const STAGES = createStages([
     'RENDER_SPRINGS',
     'RENDER_AABBS',
     'RENDER_CONTACTS',
-    'RENDER_CONSTRAINTS',
-    'PIXI',
+    'RENDER_TOOL',
 ])

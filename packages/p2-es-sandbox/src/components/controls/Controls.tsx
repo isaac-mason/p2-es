@@ -8,8 +8,11 @@ import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingl
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { Tool, Tools } from '../../types'
-import { MouseObserver } from './MouseObserver'
+import { CircleTool } from './CircleTool'
 import { PickPanTool } from './PickPanTool'
+import { PointerObserver } from './PointerObserver'
+import { PolygonTool } from './PolygonTool'
+import { RectangleTool } from './RectangleTool'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
@@ -22,23 +25,14 @@ const ControlsWrapper = styled.div`
     }
 `
 
-const defaultPhysicsStepsPerSecond = 60
-
-export const defaultSettings = {
-    physicsStepsPerSecond: defaultPhysicsStepsPerSecond,
+const defaultSettings = {
+    physicsStepsPerSecond: 60,
     maxSubSteps: 3,
     paused: false,
     useInterpolatedPositions: true,
     drawContacts: false,
     drawAABBs: false,
     debugPolygons: false,
-}
-
-export type ControlsProps = {
-    currentScene: string
-    scenes: string[]
-    setScene: (scene: string) => void
-    reset: () => void
 }
 
 const useButtonGroupControls = (
@@ -73,6 +67,13 @@ const useButtonGroupControls = (
                   }, {}),
         [current, options, hidden]
     )
+}
+
+export type ControlsProps = {
+    currentScene: string
+    scenes: string[]
+    setScene: (scene: string) => void
+    reset: () => void
 }
 
 export const Controls = ({
@@ -113,47 +114,43 @@ export const Controls = ({
             useInterpolatedPositions,
         },
         setPhysics,
-    ] = useControls(
-        'Physics',
-        () => ({
-            physicsStepsPerSecond: {
-                label: 'steps per second',
-                value: defaultSettings.physicsStepsPerSecond,
-            },
-            maxSubSteps: {
-                label: 'max sub steps',
-                value: defaultSettings.maxSubSteps,
-            },
-            paused: {
-                label: 'paused [p]',
-                value: defaultSettings.paused,
-            },
-            useInterpolatedPositions: {
-                label: 'interpolated positions',
-                value: defaultSettings.useInterpolatedPositions,
-            },
-        }),
-        []
-    )
+    ] = useControls('Physics', () => ({
+        paused: {
+            label: 'Paused [p]',
+            value: defaultSettings.paused,
+        },
+        physicsStepsPerSecond: {
+            label: 'Steps per second',
+            value: defaultSettings.physicsStepsPerSecond,
+        },
+        maxSubSteps: {
+            label: 'Max sub steps',
+            value: defaultSettings.maxSubSteps,
+        },
+        useInterpolatedPositions: {
+            label: 'Interpolated positions',
+            value: defaultSettings.useInterpolatedPositions,
+        },
+    }))
 
     const timeStep = 1 / physicsStepsPerSecond
 
     const manualStep = () => {
         if (!physicsWorldComponent) return
 
-        const { physicsWorld } = physicsWorldComponent
+        const { world } = physicsWorldComponent
 
         setPhysics({ paused: true })
-        physicsWorld.step(timeStep, timeStep)
+        world.step(timeStep, timeStep)
     }
 
     useControls(
         'Actions',
         {
-            'manual step [s]': button(() => {
+            'Manual Step [s]': button(() => {
                 manualStep()
             }),
-            'reset [r]': button(() => {
+            'Reset [r]': button(() => {
                 reset()
             }),
         },
@@ -163,15 +160,15 @@ export const Controls = ({
     const [{ drawContacts, drawAABBs, debugPolygons }, setRendering] =
         useControls('Rendering', () => ({
             drawContacts: {
-                label: 'draw contacts [c]',
+                label: 'Draw contacts [c]',
                 value: defaultSettings.drawContacts,
             },
             drawAABBs: {
-                label: 'draw AABBs [t]',
+                label: 'Draw AABBs [t]',
                 value: defaultSettings.drawAABBs,
             },
             debugPolygons: {
-                label: 'debug polygons',
+                label: 'Debug polygons',
                 value: defaultSettings.debugPolygons,
             },
         }))
@@ -221,7 +218,7 @@ export const Controls = ({
         return () => {
             window.removeEventListener('keydown', handler)
         }
-    })
+    }, [physicsWorldComponent, paused, drawContacts, drawAABBs, reset])
 
     return (
         <>
@@ -234,14 +231,21 @@ export const Controls = ({
                         sizes: {
                             controlWidth: '110px',
                         },
+                        colors: {
+                            highlight1: '#ccc',
+                            highlight2: '#ddd',
+                        },
                     }}
                 />
                 <LevaPanel />
             </ControlsWrapper>
 
             {tool === Tools.PICK_PAN && <PickPanTool />}
+            {tool === Tools.POLYGON && <PolygonTool />}
+            {tool === Tools.CIRCLE && <CircleTool />}
+            {tool === Tools.RECTANGLE && <RectangleTool />}
 
-            <MouseObserver />
+            <PointerObserver />
 
             <ecs.Entity>
                 <ecs.Component

@@ -1,55 +1,56 @@
 import * as p2 from 'p2-es'
-import { vec2 } from 'p2-es'
 import { useEffect, useRef } from 'react'
 import { PhysicsConstraintComponent } from '../../ecs/components/PhysicsConstraintComponent'
-import { MouseComponent } from '../../ecs/components/singletons/MouseComponent'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
+import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useConst } from '../../hooks/useConst'
+import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { useSingletonEntity } from '../../hooks/useSingletonEntity'
+import { STAGES } from '../../stages'
 
 const PICK_PRECISION = 0.1
 
 const SCROLL_FACTOR = 0.1
 
-type InteractionState = 'default' | 'dragging' | 'panning' | 'pinching'
+type InteractionState = 'default' | 'picking' | 'panning' | 'pinching'
 
 export const PickPanTool = () => {
     const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
     const pixi = useSingletonComponent(PixiComponent)
-    const mouseEntity = useSingletonEntity([MouseComponent])
+    const pointerEntity = useSingletonEntity([PointerComponent])
 
     const interactionState = useRef<InteractionState>('default')
 
-    const panningStartMousePosition = useRef([0, 0])
-    const panningContainerStartPosition = useRef([0, 0])
+    const panningStartPointerPosition = useRef([0, 0])
+    const panningStartContainerPosition = useRef([0, 0])
 
-    const pinchContainerInitialScale = useRef([0, 0])
+    const pinchingStartContainerScale = useRef([0, 0])
 
-    const mouseBody = useConst<p2.Body>(
+    const pointerBody = useConst<p2.Body>(
         () => new p2.Body({ type: p2.Body.STATIC })
     )
 
-    const mouseConstraint = useRef<p2.Constraint | null>(null)
+    const pointerConstraint = useRef<p2.RevoluteConstraint | null>(null)
 
     useEffect(() => {
-        if (!pixi || !physicsWorld || !mouseEntity) return
+        if (!pixi || !physicsWorld || !pointerEntity) return
 
         const { container } = pixi
-        const mouse = mouseEntity.get(MouseComponent)
+        const pointer = pointerEntity.get(PointerComponent)
 
-        const { physicsWorld: world } = physicsWorld
+        const { world } = physicsWorld
 
         const onUpHandler = () => {
-            if (interactionState.current === 'dragging') {
-                if (mouseConstraint.current) {
-                    mouseEntity.remove(PhysicsConstraintComponent)
-                    world.removeConstraint(mouseConstraint.current)
-                    mouseConstraint.current = null
+            if (interactionState.current === 'picking') {
+                if (pointerConstraint.current) {
+                    pointerEntity.remove(PhysicsConstraintComponent)
+                    world.removeConstraint(pointerConstraint.current)
+                    pointerConstraint.current = null
                 }
 
-                world.removeBody(mouseBody)
+                world.removeBody(pointerBody)
             }
 
             interactionState.current = 'default'
@@ -62,16 +63,16 @@ export const PickPanTool = () => {
 
             if (
                 interactionState.current === 'panning' ||
-                interactionState.current === 'dragging'
+                interactionState.current === 'picking'
             ) {
                 onUpHandler()
             }
 
-            const [x, y] = mouse.primaryPointer.physicsPosition
-            const mousePhysicsPosition: [number, number] = [x, y]
+            const [x, y] = pointer.primaryPointer.physicsPosition
+            const pointerPhysicsPosition: [number, number] = [x, y]
 
             const hitTest = world.hitTest(
-                mousePhysicsPosition,
+                pointerPhysicsPosition,
                 world.bodies,
                 PICK_PRECISION
             )
@@ -90,22 +91,22 @@ export const PickPanTool = () => {
             if (body) {
                 body.wakeUp()
 
-                interactionState.current = 'dragging'
+                interactionState.current = 'picking'
 
-                // move the mouse body
-                mouseBody.position[0] = x
-                mouseBody.position[1] = y
+                // move the pointer body
+                pointerBody.position[0] = x
+                pointerBody.position[1] = y
 
-                // add mouse body to world
-                world.addBody(mouseBody)
+                // add pointer body to world
+                world.addBody(pointerBody)
 
                 // Get local point of the body to create the joint on
                 const localPoint = p2.vec2.create()
-                body.toLocalFrame(localPoint, mousePhysicsPosition)
+                body.toLocalFrame(localPoint, pointerPhysicsPosition)
 
-                // Add mouse joint
-                mouseConstraint.current = new p2.RevoluteConstraint(
-                    mouseBody,
+                // Add pointer joint
+                pointerConstraint.current = new p2.RevoluteConstraint(
+                    pointerBody,
                     body,
                     {
                         localPivotA: [0, 0],
@@ -113,47 +114,46 @@ export const PickPanTool = () => {
                         maxForce: 1000 * body.mass,
                     }
                 )
-                world.addConstraint(mouseConstraint.current)
+                world.addConstraint(pointerConstraint.current)
 
-                mouseEntity.add(
+                pointerEntity.add(
                     PhysicsConstraintComponent,
-                    mouseConstraint.current
+                    pointerConstraint.current
                 )
             } else {
                 interactionState.current = 'panning'
 
-                const [stageX, stageY] = mouse.primaryPointer.stagePosition
+                const [stageX, stageY] = pointer.primaryPointer.stagePosition
                 const { x: containerX, y: containerY } = container.position
 
-                panningStartMousePosition.current[0] = stageX
-                panningStartMousePosition.current[1] = stageY
+                panningStartPointerPosition.current[0] = stageX
+                panningStartPointerPosition.current[1] = stageY
 
-                panningContainerStartPosition.current[0] = containerX
-                panningContainerStartPosition.current[1] = containerY
+                panningStartContainerPosition.current[0] = containerX
+                panningStartContainerPosition.current[1] = containerY
             }
         }
 
         const onMoveHandler = () => {
             if (interactionState.current === 'panning') {
-                const [stageX, stageY] = mouse.primaryPointer.stagePosition
-                const [panningStartMouseX, panningStartMouseY] =
-                    panningStartMousePosition.current
-                const [panningContainerStartX, panningContainerStartY] =
-                    panningContainerStartPosition.current
+                const [stageX, stageY] = pointer.primaryPointer.stagePosition
+                const [panningStartPointerX, panningStartPointerY] =
+                    panningStartPointerPosition.current
+                const [panningStartContainerX, panningStartContainerY] =
+                    panningStartContainerPosition.current
 
                 container.position.x =
-                    stageX - panningStartMouseX + panningContainerStartX
-
+                    stageX - panningStartPointerX + panningStartContainerX
                 container.position.y =
-                    stageY - panningStartMouseY + panningContainerStartY
+                    stageY - panningStartPointerY + panningStartContainerY
 
                 return
             }
 
-            if (interactionState.current === 'dragging') {
-                const [x, y] = mouse.primaryPointer.physicsPosition
-                mouseBody.position[0] = x
-                mouseBody.position[1] = y
+            if (interactionState.current === 'picking') {
+                const [x, y] = pointer.primaryPointer.physicsPosition
+                pointerBody.position[0] = x
+                pointerBody.position[1] = y
             }
         }
 
@@ -177,38 +177,24 @@ export const PickPanTool = () => {
             container.position.y += scrollFactor * (container.position.y - y)
         }
 
-        const zoomByScale = (
-            x: number,
-            y: number,
-            actualScaleX: number,
-            actualScaleY: number
-        ) => {
-            container.scale.x *= actualScaleX
-            container.scale.y *= actualScaleY
-            container.position.x +=
-                (actualScaleX - 1) * (container.position.x - x)
-            container.position.y +=
-                (actualScaleY - 1) * (container.position.y - y)
-        }
-
         const wheelHandler = (delta: number) => {
             const out = delta >= 0
             zoomByMultiplier(
-                mouse.primaryPointer.stagePosition[0],
-                mouse.primaryPointer.stagePosition[1],
+                pointer.primaryPointer.stagePosition[0],
+                pointer.primaryPointer.stagePosition[1],
                 out,
                 delta
             )
         }
 
         const pinchStartHandler = () => {
-            if (interactionState.current === 'dragging') {
+            if (interactionState.current === 'picking') {
                 onUpHandler()
             }
 
             interactionState.current = 'pinching'
 
-            pinchContainerInitialScale.current = [
+            pinchingStartContainerScale.current = [
                 container.scale.x,
                 container.scale.y,
             ]
@@ -218,62 +204,90 @@ export const PickPanTool = () => {
             interactionState.current = 'default'
         }
 
+        const zoomByScalar = (x: number, y: number, scalar: number) => {
+            container.scale.x *= scalar
+            container.scale.y *= scalar
+            container.position.x += (scalar - 1) * (container.position.x - x)
+            container.position.y += (scalar - 1) * (container.position.y - y)
+        }
+
         const pinchMoveHandler = () => {
             interactionState.current = 'pinching'
 
-            const touchA = mouse.touches[mouse.pinchATouch!]
-            const touchB = mouse.touches[mouse.pinchBTouch!]
+            const touchA = pointer.touches[pointer.pinchATouch!]
+            const touchB = pointer.touches[pointer.pinchBTouch!]
 
-            const tmp = vec2.create()
-
-            // Get center
-            vec2.add(tmp, touchA.physicsPosition, touchB.physicsPosition)
-            vec2.scale(tmp, touchA.physicsPosition, 0.5)
-
-            const pinchChange = mouse.pinchLength! / mouse.pinchInitialLength!
-
-            const actualScaleX =
-                pinchChange * pinchContainerInitialScale.current[0]
-
-            const actualScaleY =
-                pinchChange * pinchContainerInitialScale.current[1] // zoom relative to the initial scale
-
-            console.log('current scale', container.scale.x, container.scale.y)
-            console.log(pinchChange, actualScaleX, actualScaleY)
-
+            const zoomScalar =
+                pointer.pinchLength! / pointer.pinchInitialLength!
             const x = (touchA.stagePosition[0] + touchB.stagePosition[0]) * 0.5
             const y = (touchA.stagePosition[1] + touchB.stagePosition[1]) * 0.5
 
-            console.log(x, y)
-
-            // zoomByScale(x, y, actualScaleX, actualScaleY)
-            zoomByScale(x, y, pinchChange, pinchChange)
+            zoomByScalar(x, y, zoomScalar)
         }
 
-        mouse.onWheel.add(wheelHandler)
+        pointer.onWheel.add(wheelHandler)
 
-        mouse.onPinchStart.add(pinchStartHandler)
-        mouse.onPinchMove.add(pinchMoveHandler)
-        mouse.onPinchEnd.add(pinchEndHandler)
+        pointer.onPinchStart.add(pinchStartHandler)
+        pointer.onPinchMove.add(pinchMoveHandler)
+        pointer.onPinchEnd.add(pinchEndHandler)
 
-        mouse.onMove.add(onMoveHandler)
-        mouse.onDown.add(onDownHandler)
-        mouse.onUp.add(onUpHandler)
+        pointer.onMove.add(onMoveHandler)
+        pointer.onDown.add(onDownHandler)
+        pointer.onUp.add(onUpHandler)
 
         return () => {
             onUpHandler()
 
-            mouse.onWheel.delete(wheelHandler)
+            pointer.onWheel.delete(wheelHandler)
 
-            mouse.onPinchStart.delete(pinchStartHandler)
-            mouse.onPinchMove.delete(pinchMoveHandler)
-            mouse.onPinchEnd.delete(pinchEndHandler)
+            pointer.onPinchStart.delete(pinchStartHandler)
+            pointer.onPinchMove.delete(pinchMoveHandler)
+            pointer.onPinchEnd.delete(pinchEndHandler)
 
-            mouse.onMove.delete(onMoveHandler)
-            mouse.onDown.delete(onDownHandler)
-            mouse.onUp.delete(onUpHandler)
+            pointer.onMove.delete(onMoveHandler)
+            pointer.onDown.delete(onDownHandler)
+            pointer.onUp.delete(onUpHandler)
         }
-    }, [pixi, physicsWorld, mouseEntity])
+    }, [pixi, physicsWorld, pointerEntity])
+
+    // draw pick line
+    const pickLineGraphicsCleared = useRef(false)
+    useFrame(
+        () => {
+            if (!pixi) return
+
+            const {
+                container,
+                graphics: { pick: pickGraphics },
+            } = pixi
+
+            if (pointerConstraint.current) {
+                pickLineGraphicsCleared.current = false
+
+                pickGraphics.clear()
+                container.removeChild(pickGraphics)
+                container.addChild(pickGraphics)
+
+                pickGraphics.lineStyle(0.01, 0x000000, 1)
+
+                const constraint = pointerConstraint.current
+
+                const worldPivotA = p2.vec2.create()
+                constraint.bodyA.toWorldFrame(worldPivotA, constraint.pivotA)
+
+                const worldPivotB = p2.vec2.create()
+                constraint.bodyB.toWorldFrame(worldPivotB, constraint.pivotB)
+
+                pickGraphics.moveTo(worldPivotA[0], worldPivotA[1])
+                pickGraphics.lineTo(worldPivotB[0], worldPivotB[1])
+            } else if (!pickLineGraphicsCleared.current) {
+                pickGraphics.clear()
+                pickLineGraphicsCleared.current = true
+            }
+        },
+        [pixi],
+        STAGES.RENDER_TOOL
+    )
 
     return null
 }
