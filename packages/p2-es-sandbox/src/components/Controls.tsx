@@ -3,14 +3,14 @@ import { ButtonInput } from 'leva/dist/declarations/src/types'
 import React, { useEffect, useMemo } from 'react'
 import { up } from 'styled-breakpoints'
 import styled from 'styled-components'
-import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
+import { PhysicsWorldComponent } from '../ecs/components/singletons/PhysicsWorldComponent'
 import {
     Settings,
     SettingsComponent,
-} from '../../ecs/components/singletons/SettingsSingletonComponent'
-import { useECS } from '../../hooks/useECS'
-import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { Tool, Tools } from '../../types'
+} from '../ecs/components/singletons/SettingsSingletonComponent'
+import { useECS } from '../hooks/useECS'
+import { useSingletonComponent } from '../hooks/useSingletonComponent'
+import { Tool, Tools } from '../types'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
