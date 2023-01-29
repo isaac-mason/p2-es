@@ -1,5 +1,5 @@
 import { Component, ComponentClass } from 'arancini'
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useECS } from './useECS'
 
 export const useSingletonComponent = <T extends Component>(
@@ -9,21 +9,17 @@ export const useSingletonComponent = <T extends Component>(
 
     const query = ecs.useQuery([componentClass])
 
-    const [systemComponent, setSystemComponent] = useState<T | null>(null)
-
-    useEffect(() => {
+    return useMemo(() => {
         const entity = query.first
         if (!entity) {
-            return setSystemComponent(null)
+            return null
         }
 
         const component = entity.find(componentClass)
         if (!component) {
-            return setSystemComponent(null)
+            return null
         }
 
-        setSystemComponent(component)
+        return component
     }, [query])
-
-    return systemComponent
 }

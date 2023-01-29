@@ -1,8 +1,8 @@
 import { vec2 } from 'p2-es'
 import { FederatedEvent, FederatedMouseEvent } from 'pixi.js'
 import { useEffect } from 'react'
-import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
+import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 
@@ -185,7 +185,7 @@ export const PointerObserver = () => {
 
             pointerEntity.destroy()
         }
-    }, [pixi])
+    }, [pixi?.id])
 
     return null
 }

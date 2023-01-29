@@ -272,11 +272,13 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
     useEffect(() => {
         if (!pixiComponent) return
         pixiComponent.onResize()
-    }, [pixiComponent, controlsHidden])
+    }, [pixiComponent?.id, controlsHidden])
 
     /* create the pixi application */
     useEffect(() => {
         const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
+
+        console.log('creating pixi')
         const pixiEntity = ecs.world.create.entity()
         pixiEntity.add(PixiComponent, pixi)
 
@@ -284,6 +286,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
         console.log(CONSOLE_MESSAGE)
 
         return () => {
+            console.log('destroying pixi')
             pixiEntity.destroy()
             destroyPixi()
         }
@@ -389,7 +392,13 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                 entity.destroy()
             })
         }
-    }, [pixiComponent, settingsComponent, pointerComponent, scene, version])
+    }, [
+        pixiComponent?.id,
+        settingsComponent?.id,
+        pointerComponent?.id,
+        scene,
+        version,
+    ])
 
     /* step the physics world */
     useFrame(
@@ -404,7 +413,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
             if (paused) return
             world.step(timeStep, delta, maxSubSteps)
         },
-        [settingsComponent, physicsWorldComponent],
+        [settingsComponent?.id, physicsWorldComponent?.id],
         STAGES.PHYSICS
     )
 

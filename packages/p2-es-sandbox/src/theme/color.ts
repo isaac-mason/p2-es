@@ -1,6 +1,6 @@
 export const color = {
     canvas: {
-        background: '#ffffff',
+        background: 0x222222,
     },
     background: '#181c20',
     backgroundLight: '#2f353b',

@@ -231,7 +231,7 @@ export const ControlsInner = ({
         return () => {
             window.removeEventListener('keydown', handler)
         }
-    }, [physicsWorldComponent, paused, drawContacts, drawAABBs, reset])
+    }, [physicsWorldComponent?.id, paused, drawContacts, drawAABBs, reset])
 
     const settingsComponentArgs: [Settings] = useMemo(
         () => [

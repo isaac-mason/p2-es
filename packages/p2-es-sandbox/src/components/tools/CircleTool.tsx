@@ -4,7 +4,6 @@ import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWo
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { useSingletonEntity } from '../../hooks/useSingletonEntity'
 import { drawCircle } from '../../utils/pixi/drawCircle'
 
 type CircleToolState = 'default' | 'drawing'
@@ -18,22 +17,21 @@ export const CircleTool = ({
     newShapeCollisionGroup,
     newShapeCollisionMask,
 }: CircleToolProps) => {
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const pointerEntity = useSingletonEntity([PointerComponent])
+    const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
+    const pixi = useSingletonComponent(PixiComponent)
+    const pointer = useSingletonComponent(PointerComponent)
 
     const toolState = useRef<CircleToolState>('default')
     const circleCenter = useRef<[number, number]>([0, 0])
     const circleRadius = useRef<number>(0)
 
     useEffect(() => {
-        if (!pixiComponent || !physicsWorldComponent || !pointerEntity) return
+        if (!pixi || !physicsWorld || !pointer) return
 
-        const pointer = pointerEntity.get(PointerComponent)
-        const { world } = physicsWorldComponent
+        const { world } = physicsWorld
 
         const updateGraphics = () => {
-            const { drawShape: graphics } = pixiComponent.graphics
+            const { drawShape: graphics } = pixi.graphics
             graphics.clear()
 
             if (toolState.current === 'default') return
@@ -113,7 +111,7 @@ export const CircleTool = ({
             pointer.onDown.delete(onDownHandler)
             pointer.onUp.delete(onUpHandler)
         }
-    }, [pixiComponent, physicsWorldComponent, pointerEntity])
+    }, [pixi?.id, physicsWorld?.id, pointer?.id])
 
     return null
 }

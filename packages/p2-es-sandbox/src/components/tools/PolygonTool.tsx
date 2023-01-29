@@ -4,7 +4,6 @@ import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWo
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { useSingletonEntity } from '../../hooks/useSingletonEntity'
 import { drawPath } from '../../utils/pixi/drawPath'
 
 type PolygonToolState = 'default' | 'drawing'
@@ -18,21 +17,20 @@ export const PolygonTool = ({
     newShapeCollisionGroup,
     newShapeCollisionMask,
 }: PolygonToolProps) => {
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const pointerEntity = useSingletonEntity([PointerComponent])
+    const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
+    const pixi = useSingletonComponent(PixiComponent)
+    const pointer = useSingletonComponent(PointerComponent)
 
     const toolState = useRef<PolygonToolState>('default')
     const polygonPoints = useRef<[number, number][]>([])
 
     useEffect(() => {
-        if (!pixiComponent || !physicsWorldComponent || !pointerEntity) return
+        if (!pixi || !physicsWorld || !pointer) return
 
-        const pointer = pointerEntity.get(PointerComponent)
-        const { world } = physicsWorldComponent
+        const { world } = physicsWorld
 
         const updateGraphics = () => {
-            const { drawShape: graphics } = pixiComponent.graphics
+            const { drawShape: graphics } = pixi.graphics
             graphics.clear()
 
             if (toolState.current === 'default') return
@@ -111,7 +109,7 @@ export const PolygonTool = ({
             pointer.onDown.delete(onDownHandler)
             pointer.onUp.delete(onUpHandler)
         }
-    }, [pixiComponent, physicsWorldComponent, pointerEntity])
+    }, [pixi, physicsWorld, pointer])
 
     return null
 }

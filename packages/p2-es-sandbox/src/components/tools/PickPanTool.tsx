@@ -1,13 +1,11 @@
 import * as p2 from 'p2-es'
 import { useEffect, useRef } from 'react'
-import { PhysicsConstraintComponent } from '../../ecs/components/PhysicsConstraintComponent'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useConst } from '../../hooks/useConst'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { useSingletonEntity } from '../../hooks/useSingletonEntity'
 import { STAGES } from '../../stages'
 
 const PICK_PRECISION = 0.1
@@ -19,7 +17,7 @@ type InteractionState = 'default' | 'picking' | 'panning' | 'pinching'
 export const PickPanTool = () => {
     const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
     const pixi = useSingletonComponent(PixiComponent)
-    const pointerEntity = useSingletonEntity([PointerComponent])
+    const pointer = useSingletonComponent(PointerComponent)
 
     const interactionState = useRef<InteractionState>('default')
 
@@ -35,17 +33,14 @@ export const PickPanTool = () => {
     const pointerConstraint = useRef<p2.RevoluteConstraint | null>(null)
 
     useEffect(() => {
-        if (!pixi || !physicsWorld || !pointerEntity) return
+        if (!pixi || !physicsWorld || !pointer) return
 
         const { container } = pixi
-        const pointer = pointerEntity.get(PointerComponent)
-
         const { world } = physicsWorld
 
         const onUpHandler = () => {
             if (interactionState.current === 'picking') {
                 if (pointerConstraint.current) {
-                    pointerEntity.remove(PhysicsConstraintComponent)
                     world.removeConstraint(pointerConstraint.current)
                     pointerConstraint.current = null
                 }
@@ -115,11 +110,6 @@ export const PickPanTool = () => {
                     }
                 )
                 world.addConstraint(pointerConstraint.current)
-
-                pointerEntity.add(
-                    PhysicsConstraintComponent,
-                    pointerConstraint.current
-                )
             } else {
                 interactionState.current = 'panning'
 
@@ -248,7 +238,7 @@ export const PickPanTool = () => {
             pointer.onDown.delete(onDownHandler)
             pointer.onUp.delete(onUpHandler)
         }
-    }, [pixi, physicsWorld, pointerEntity])
+    }, [pixi?.id, physicsWorld?.id, pointer?.id])
 
     // draw pick line
     const pickLineGraphicsCleared = useRef(false)
