@@ -64,9 +64,9 @@ const Wrapper = styled.div`
 
 const Header = styled.div`
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 
     width: calc(100% - 30px);
     height: 40px;
@@ -108,17 +108,10 @@ export type AppProps = {
 
     title?: string
 
-    /**
-     * @default true
-     */
-    controls?: boolean
+    codeLink?: string
 }
 
-const AppInner = ({
-    title = 'p2-es sandbox',
-    controls = true,
-    setup,
-}: AppProps) => {
+const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
     const [version, setVersion] = useState(0)
 
     const ecs = useECS()
@@ -130,6 +123,8 @@ const AppInner = ({
     const [scene, setScene] = useState(sceneNames[0])
 
     const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
+
+    const [controlsHidden, setControlsHidden] = useState(false)
 
     const [sandboxUpdateHandlers, setSandboxUpdateHandlers] = useState<Set<
         (delta: number) => void
@@ -157,6 +152,12 @@ const AppInner = ({
             destroyPixi()
         }
     }, [])
+
+    useEffect(() => {
+        if (pixiComponent) {
+            pixiComponent.onResize()
+        }
+    }, [controlsHidden, pixiComponent])
 
     /* create the current scene */
     useEffect(() => {
@@ -293,21 +294,37 @@ const AppInner = ({
             {/* UI */}
             <Wrapper>
                 <Header>
-                    {title} {sceneNames.length > 1 ? ` - ${scene}` : ''}
+                    <a>p2-es</a>
+                    <div>
+                        <div>
+                            <div>
+                                {title}{' '}
+                                {sceneNames.length > 1 ? ` - ${scene}` : ''}
+                            </div>
+                            <button
+                                onClick={() =>
+                                    setControlsHidden((current) => !current)
+                                }
+                            >
+                                {'🔧'}
+                            </button>
+                            {codeLink ? <a href={codeLink}>{'{ }'}</a> : null}
+                        </div>
+                    </div>
+                    <a>docs</a>
                 </Header>
                 <Main>
                     <CanvasWrapper ref={canvasWrapperElement} />
 
-                    {controls ? (
-                        <Controls
-                            tool={tool}
-                            setTool={(t) => setTool(t)}
-                            currentScene={scene}
-                            scenes={sceneNames}
-                            setScene={(sceneName) => setScene(sceneName)}
-                            reset={() => setVersion((v) => v + 1)}
-                        />
-                    ) : null}
+                    <Controls
+                        hidden={controlsHidden}
+                        tool={tool}
+                        setTool={(t) => setTool(t)}
+                        currentScene={scene}
+                        scenes={sceneNames}
+                        setScene={(sceneName) => setScene(sceneName)}
+                        reset={() => setVersion((v) => v + 1)}
+                    />
                 </Main>
             </Wrapper>
 

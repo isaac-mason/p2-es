@@ -44,6 +44,8 @@ export const initPixi = (
     container.addChild(graphics.drawShape)
 
     const onResize = () => {
+        if (!application.stage) return
+
         const dpr = window.devicePixelRatio || 1
         const rect = domElement.getBoundingClientRect()
         const w = rect.width * dpr
@@ -78,6 +80,7 @@ export const initPixi = (
         graphics,
         background,
         canvasElement,
+        onResize,
         destroyPixi,
     }
 }

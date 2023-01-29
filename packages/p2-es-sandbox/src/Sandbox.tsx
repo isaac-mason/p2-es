@@ -5,11 +5,6 @@ import { SandboxFunction, Scenes } from './types'
 
 export type SandboxProps = {
     title?: string
-
-    /**
-     * @default true
-     */
-    controls?: boolean
 }
 
 export class Sandbox {
@@ -23,20 +18,9 @@ export class Sandbox {
     ) {}
 
     init(): this {
-        const config = {
-            controls: true,
-            ...this.config,
-        }
-
         this.root = ReactDOM.createRoot(this.domElement)
 
-        this.root.render(
-            <App
-                setup={this.setup}
-                controls={config.controls}
-                title={config.title}
-            />
-        )
+        this.root.render(<App setup={this.setup} title={this.config?.title} />)
 
         return this
     }

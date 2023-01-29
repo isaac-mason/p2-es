@@ -12,10 +12,13 @@ import { useECS } from '../hooks/useECS'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { Tool, Tools } from '../types'
 
-const ControlsWrapper = styled.div`
+const ControlsWrapper = styled.div<{ hidden: boolean }>`
     padding: 5px;
     background: #181c20;
     width: calc(100% - 10px);
+
+    // position: relative;
+    // right: ${(props) => (props.hidden ? '-100%' : '0')};
 
     ${up('md')} {
         width: 320px;
@@ -68,6 +71,7 @@ const useButtonGroupControls = (
 }
 
 export type ControlsProps = {
+    hidden: boolean
     currentScene: string
     tool: Tool
     setTool: (tool: Tool) => void
@@ -77,6 +81,7 @@ export type ControlsProps = {
 }
 
 export const Controls = ({
+    hidden,
     currentScene,
     scenes,
     setScene,
@@ -244,7 +249,7 @@ export const Controls = ({
     )
     return (
         <>
-            <ControlsWrapper>
+            <ControlsWrapper hidden={hidden}>
                 <Leva
                     fill
                     flat

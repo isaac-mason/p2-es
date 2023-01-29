@@ -13,6 +13,7 @@ export type Pixi = {
         pick: Graphics
         drawShape: Graphics
     }
+    onResize: () => void
 }
 
 export class PixiComponent extends Component {
@@ -28,6 +29,8 @@ export class PixiComponent extends Component {
 
     graphics!: Pixi['graphics']
 
+    onResize!: () => void
+
     construct(pixi: Pixi) {
         this.canvasElement = pixi.canvasElement
         this.application = pixi.application
@@ -35,5 +38,6 @@ export class PixiComponent extends Component {
         this.container = pixi.container
         this.background = pixi.background
         this.graphics = pixi.graphics
+        this.onResize = pixi.onResize
     }
 }
