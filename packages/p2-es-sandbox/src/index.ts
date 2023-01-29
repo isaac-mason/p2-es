@@ -1,3 +1,2 @@
-export * from './components/Sandbox'
-export * from './createSandbox'
+export * from './Sandbox'
 export * from './types'

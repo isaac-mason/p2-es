@@ -10,76 +10,72 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
             import { Voronoi } from './js/rhill-voronoi-core.js'
 
-            createSandbox(
-                (context) => {
-                    // Create the world
-                    const world = new p2.World({
-                        gravity: [0, -5],
+            new Sandbox(({ frame }) => {
+                // Create the world
+                const world = new p2.World({
+                    gravity: [0, -5],
+                })
+
+                const voronoi = new Voronoi()
+                const bbox = {
+                    xl: -2, // left
+                    xr: 2, // right
+                    yt: -2, // top
+                    yb: 2, // bottom
+                }
+
+                const sites = []
+                for (let i = 0; i < 50; i++) {
+                    // generate points within the bbox
+                    const site = {
+                        x: bbox.xl + Math.random() * (bbox.xr - bbox.xl),
+                        y: bbox.yb + Math.random() * (bbox.yt - bbox.yb),
+                    }
+                    sites.push(site)
+                }
+                const diagram = voronoi.compute(sites, bbox)
+
+                for (let i = 0; i < diagram.cells.length; i++) {
+                    const cell = diagram.cells[i]
+                    const vertices = []
+                    for (let j = 0; j < cell.halfedges.length; j++) {
+                        const edge = cell.halfedges[j].getStartpoint()
+                        vertices.push([edge.x - cell.site.x, -(edge.y - cell.site.y)])
+                    }
+                    const body = new p2.Body({
+                        position: [cell.site.x + 15, -cell.site.y],
+                        velocity: [-15, 5],
+                        mass: 1,
                     })
-
-                    const voronoi = new Voronoi()
-                    const bbox = {
-                        xl: -2, // left
-                        xr: 2, // right
-                        yt: -2, // top
-                        yb: 2, // bottom
-                    }
-
-                    const sites = []
-                    for (let i = 0; i < 50; i++) {
-                        // generate points within the bbox
-                        const site = {
-                            x: bbox.xl + Math.random() * (bbox.xr - bbox.xl),
-                            y: bbox.yb + Math.random() * (bbox.yt - bbox.yb),
-                        }
-                        sites.push(site)
-                    }
-                    const diagram = voronoi.compute(sites, bbox)
-
-                    for (let i = 0; i < diagram.cells.length; i++) {
-                        const cell = diagram.cells[i]
-                        const vertices = []
-                        for (let j = 0; j < cell.halfedges.length; j++) {
-                            const edge = cell.halfedges[j].getStartpoint()
-                            vertices.push([edge.x - cell.site.x, -(edge.y - cell.site.y)])
-                        }
-                        const body = new p2.Body({
-                            position: [cell.site.x + 15, -cell.site.y],
-                            velocity: [-15, 5],
-                            mass: 1,
+                    body.addShape(
+                        new p2.Convex({
+                            vertices: vertices,
                         })
-                        body.addShape(
-                            new p2.Convex({
-                                vertices: vertices,
-                            })
-                        )
-                        world.addBody(body)
-                    }
+                    )
+                    world.addBody(body)
+                }
 
-                    const planeBody = new p2.Body({
-                        position: [0, -3],
-                    })
-                    planeBody.addShape(new p2.Plane())
-                    world.addBody(planeBody)
+                const planeBody = new p2.Body({
+                    position: [0, -3],
+                })
+                planeBody.addShape(new p2.Plane())
+                world.addBody(planeBody)
 
-                    const planeBody2 = new p2.Body({
-                        position: [-5, 0],
-                        angle: -Math.PI / 2,
-                    })
-                    planeBody2.addShape(new p2.Plane())
-                    world.addBody(planeBody2)
+                const planeBody2 = new p2.Body({
+                    position: [-5, 0],
+                    angle: -Math.PI / 2,
+                })
+                planeBody2.addShape(new p2.Plane())
+                world.addBody(planeBody2)
 
-                    // Start demo
-                    context.frame(0, 0, 12, 12)
+                frame(0, 0, 12, 12)
 
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

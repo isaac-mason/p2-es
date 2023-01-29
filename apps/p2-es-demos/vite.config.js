@@ -13,9 +13,7 @@ const createEntrypoints = (entrypoints) => {
 }
 
 export default defineConfig({
-    plugins: [
-        react(),
-    ],
+    plugins: [react()],
     base: './',
     build: {
         outDir: '../dist',

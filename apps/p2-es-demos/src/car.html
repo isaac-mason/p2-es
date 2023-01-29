@@ -10,81 +10,78 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
-            createSandbox(
-                (context) => {
-                    // Create a World
-                    const world = new p2.World({
-                        gravity: [0, -10], // Set gravity to -10 in y direction
-                    })
+            new Sandbox(({ frame }) => {
+                // Create a World
+                const world = new p2.World({
+                    gravity: [0, -10], // Set gravity to -10 in y direction
+                })
 
-                    // Set high friction so the wheels don't slip
-                    world.defaultContactMaterial.friction = 100
+                // Set high friction so the wheels don't slip
+                world.defaultContactMaterial.friction = 100
 
-                    // Create ground shape (plane)
-                    const planeShape = new p2.Plane()
+                // Create ground shape (plane)
+                const planeShape = new p2.Plane()
 
-                    // Create a body for the ground
-                    const planeBody = new p2.Body({
-                        mass: 0, // Mass == 0 makes the body static
-                    })
-                    planeBody.addShape(planeShape) // Add the shape to the body
-                    world.addBody(planeBody) // Add the body to the World
+                // Create a body for the ground
+                const planeBody = new p2.Body({
+                    mass: 0, // Mass == 0 makes the body static
+                })
+                planeBody.addShape(planeShape) // Add the shape to the body
+                world.addBody(planeBody) // Add the body to the World
 
-                    // Add circle bump in the center
-                    const circleShape = new p2.Circle({ radius: 2 }) // Circle shape of radius 2
-                    const circleBody = new p2.Body({
-                        position: [0, -1], // Set initial position
-                    })
-                    circleBody.addShape(circleShape)
-                    world.addBody(circleBody)
+                // Add circle bump in the center
+                const circleShape = new p2.Circle({ radius: 2 }) // Circle shape of radius 2
+                const circleBody = new p2.Body({
+                    position: [0, -1], // Set initial position
+                })
+                circleBody.addShape(circleShape)
+                world.addBody(circleBody)
 
-                    // Create chassis for our car
-                    const chassisBody = new p2.Body({
-                        mass: 1, // Setting mass > 0 makes it dynamic
-                        position: [-4, 1], // Initial position
-                    })
-                    const chassisShape = new p2.Box({ width: 1, height: 0.5 }) // Chassis shape is a rectangle
-                    chassisBody.addShape(chassisShape)
-                    world.addBody(chassisBody)
+                // Create chassis for our car
+                const chassisBody = new p2.Body({
+                    mass: 1, // Setting mass > 0 makes it dynamic
+                    position: [-4, 1], // Initial position
+                })
+                const chassisShape = new p2.Box({ width: 1, height: 0.5 }) // Chassis shape is a rectangle
+                chassisBody.addShape(chassisShape)
+                world.addBody(chassisBody)
 
-                    // Create wheels
-                    const wheelBody1 = new p2.Body({ mass: 1, position: [chassisBody.position[0] - 0.5, 0.7] })
-                    const wheelBody2 = new p2.Body({ mass: 1, position: [chassisBody.position[0] + 0.5, 0.7] })
-                    const wheelShape1 = new p2.Circle({ radius: 0.2 })
-                    const wheelShape2 = new p2.Circle({ radius: 0.2 })
-                    wheelBody1.addShape(wheelShape1)
-                    wheelBody2.addShape(wheelShape2)
-                    world.addBody(wheelBody1)
-                    world.addBody(wheelBody2)
+                // Create wheels
+                const wheelBody1 = new p2.Body({ mass: 1, position: [chassisBody.position[0] - 0.5, 0.7] })
+                const wheelBody2 = new p2.Body({ mass: 1, position: [chassisBody.position[0] + 0.5, 0.7] })
+                const wheelShape1 = new p2.Circle({ radius: 0.2 })
+                const wheelShape2 = new p2.Circle({ radius: 0.2 })
+                wheelBody1.addShape(wheelShape1)
+                wheelBody2.addShape(wheelShape2)
+                world.addBody(wheelBody1)
+                world.addBody(wheelBody2)
 
-                    // Constrain wheels to chassis with revolute constraints.
-                    // Revolutes lets the connected bodies rotate around a shared point.
-                    const revoluteBack = new p2.RevoluteConstraint(chassisBody, wheelBody1, {
-                        localPivotA: [-0.5, -0.3], // Where to hinge first wheel on the chassis
-                        localPivotB: [0, 0],
-                        collideConnected: false,
-                    })
-                    const revoluteFront = new p2.RevoluteConstraint(chassisBody, wheelBody2, {
-                        localPivotA: [0.5, -0.3], // Where to hinge second wheel on the chassis
-                        localPivotB: [0, 0], // Where the hinge is in the wheel (center)
-                        collideConnected: false,
-                    })
-                    world.addConstraint(revoluteBack)
-                    world.addConstraint(revoluteFront)
+                // Constrain wheels to chassis with revolute constraints.
+                // Revolutes lets the connected bodies rotate around a shared point.
+                const revoluteBack = new p2.RevoluteConstraint(chassisBody, wheelBody1, {
+                    localPivotA: [-0.5, -0.3], // Where to hinge first wheel on the chassis
+                    localPivotB: [0, 0],
+                    collideConnected: false,
+                })
+                const revoluteFront = new p2.RevoluteConstraint(chassisBody, wheelBody2, {
+                    localPivotA: [0.5, -0.3], // Where to hinge second wheel on the chassis
+                    localPivotB: [0, 0], // Where the hinge is in the wheel (center)
+                    collideConnected: false,
+                })
+                world.addConstraint(revoluteBack)
+                world.addConstraint(revoluteFront)
 
-                    // Enable the constraint motor for the back wheel
-                    revoluteBack.motorEnabled = true
-                    revoluteBack.motorSpeed = 10 // Rotational speed in radians per second
+                // Enable the constraint motor for the back wheel
+                revoluteBack.motorEnabled = true
+                revoluteBack.motorSpeed = 10 // Rotational speed in radians per second
 
-                    context.frame(0, 0, 8, 6)
+                frame(0, 0, 8, 6)
 
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

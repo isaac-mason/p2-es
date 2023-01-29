@@ -10,7 +10,7 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             const size = 0.23
@@ -116,13 +116,13 @@
             }
 
             // Create demo application
-            createSandbox(
+            new Sandbox(
                 {
                     'Plane Ground': {
-                        setup: (context) => {
-                            const world = common(context)
+                        setup: ({ frame }) => {
+                            const world = common()
 
-                            context.frame(0, 0, 12, 2)
+                            frame(0, 0, 12, 2)
 
                             // Create plane ground
                             const planeShape = new p2.Plane()
@@ -136,10 +136,10 @@
                         },
                     },
                     'Heightfield Ground': {
-                        setup: (context) => {
-                            const world = common(context)
+                        setup: ({ frame }) => {
+                            const world = common()
 
-                            context.frame(0, 0, 12, 2)
+                            frame(0, 0, 12, 2)
 
                             // Create heightfield ground
                             const data = []
@@ -165,8 +165,8 @@
                         },
                     },
                 },
-                { domElement: document.getElementById('demo') }
-            )
+                document.getElementById('demo')
+            ).init()
         </script>
     </body>
 </html>

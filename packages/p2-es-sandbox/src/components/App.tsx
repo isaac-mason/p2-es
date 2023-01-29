@@ -52,7 +52,7 @@ body.addShape(new p2.Circle({
 world.addBody(body);
 `
 
-const SandboxWrapper = styled.div`
+const Wrapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -62,7 +62,7 @@ const SandboxWrapper = styled.div`
     background-color: #fff;
 `
 
-const SandboxHeader = styled.div`
+const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -79,7 +79,7 @@ const SandboxHeader = styled.div`
     font-family: 'Roboto Mono', monospace;
 `
 
-const SandboxMain = styled.div`
+const Main = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -92,7 +92,7 @@ const SandboxMain = styled.div`
     }
 `
 
-const SandboxCanvasWrapper = styled.div`
+const CanvasWrapper = styled.div`
     flex: none;
     height: calc(100vh - 10em);
     width: 100%;
@@ -103,7 +103,7 @@ const SandboxCanvasWrapper = styled.div`
     }
 `
 
-export type SandboxProps = {
+export type AppProps = {
     setup: SandboxFunction | Scenes
 
     title?: string
@@ -114,11 +114,11 @@ export type SandboxProps = {
     controls?: boolean
 }
 
-const SandboxInner = ({
+const AppInner = ({
     title = 'p2-es sandbox',
     controls = true,
     setup,
-}: SandboxProps) => {
+}: AppProps) => {
     const [version, setVersion] = useState(0)
 
     const ecs = useECS()
@@ -291,12 +291,12 @@ const SandboxInner = ({
     return (
         <>
             {/* UI */}
-            <SandboxWrapper>
-                <SandboxHeader>
+            <Wrapper>
+                <Header>
                     {title} {sceneNames.length > 1 ? ` - ${scene}` : ''}
-                </SandboxHeader>
-                <SandboxMain>
-                    <SandboxCanvasWrapper ref={canvasWrapperElement} />
+                </Header>
+                <Main>
+                    <CanvasWrapper ref={canvasWrapperElement} />
 
                     {controls ? (
                         <Controls
@@ -308,8 +308,8 @@ const SandboxInner = ({
                             reset={() => setVersion((v) => v + 1)}
                         />
                     ) : null}
-                </SandboxMain>
-            </SandboxWrapper>
+                </Main>
+            </Wrapper>
 
             {/* Interaction */}
             <PointerObserver />
@@ -330,13 +330,13 @@ const SandboxInner = ({
     )
 }
 
-export const Sandbox = (props: SandboxProps) => {
+export const App = (props: AppProps) => {
     const world = useConst(() => createWorld())
 
     return (
         <React.StrictMode>
             <WorldContextProvider world={world}>
-                <SandboxInner {...props} />
+                <AppInner {...props} />
             </WorldContextProvider>
         </React.StrictMode>
     )

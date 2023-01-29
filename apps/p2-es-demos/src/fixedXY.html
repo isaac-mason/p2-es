@@ -10,10 +10,10 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
-            createSandbox((context) => {
+            new Sandbox(() => {
                 const world = new p2.World({
                     gravity: [0, -10],
                 })
@@ -47,8 +47,7 @@
                 world.addBody(plane)
 
                 return { world }
-            },
-            { domElement: document.getElementById('demo') })
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

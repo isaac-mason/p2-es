@@ -10,136 +10,133 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             const stiffness = 100
             const damping = 5
             const restLength = 0.5
 
-            createSandbox(
-                (context) => {
-                    // Create the physics world
-                    const world = new p2.World({
-                        gravity: [0, -10],
-                    })
+            new Sandbox(() => {
+                // Create the physics world
+                const world = new p2.World({
+                    gravity: [0, -10],
+                })
 
-                    // Set high friction so the wheels don't slip
-                    world.defaultContactMaterial.friction = 100
+                // Set high friction so the wheels don't slip
+                world.defaultContactMaterial.friction = 100
 
-                    // Create ground
-                    const planeShape = new p2.Plane()
-                    const plane = new p2.Body()
-                    plane.addShape(planeShape)
-                    world.addBody(plane)
+                // Create ground
+                const planeShape = new p2.Plane()
+                const plane = new p2.Body()
+                plane.addShape(planeShape)
+                world.addBody(plane)
 
-                    // Create chassis
-                    const chassisBody = new p2.Body({ mass: 1, position: [0, 1] })
-                    const chassisShape = new p2.Box({ width: 1, height: 0.5 })
-                    chassisBody.addShape(chassisShape)
-                    world.addBody(chassisBody)
+                // Create chassis
+                const chassisBody = new p2.Body({ mass: 1, position: [0, 1] })
+                const chassisShape = new p2.Box({ width: 1, height: 0.5 })
+                chassisBody.addShape(chassisShape)
+                world.addBody(chassisBody)
 
-                    // Create wheels
-                    const wheelBody1 = new p2.Body({ mass: 1, position: [chassisBody.position[0] - 0.5, 0.7] })
-                    const wheelBody2 = new p2.Body({ mass: 1, position: [chassisBody.position[0] + 0.5, 0.7] })
-                    const wheelShape1 = new p2.Circle({ radius: 0.3 })
-                    const wheelShape2 = new p2.Circle({ radius: 0.3 })
-                    wheelBody1.addShape(wheelShape1)
-                    wheelBody2.addShape(wheelShape2)
-                    world.addBody(wheelBody1)
-                    world.addBody(wheelBody2)
+                // Create wheels
+                const wheelBody1 = new p2.Body({ mass: 1, position: [chassisBody.position[0] - 0.5, 0.7] })
+                const wheelBody2 = new p2.Body({ mass: 1, position: [chassisBody.position[0] + 0.5, 0.7] })
+                const wheelShape1 = new p2.Circle({ radius: 0.3 })
+                const wheelShape2 = new p2.Circle({ radius: 0.3 })
+                wheelBody1.addShape(wheelShape1)
+                wheelBody2.addShape(wheelShape2)
+                world.addBody(wheelBody1)
+                world.addBody(wheelBody2)
 
-                    // Disable collisions between chassis and wheels
-                    const WHEELS = 1 // Define bits for each shape type
-                    const CHASSIS = 2
-                    const GROUND = 4
-                    const OTHER = 8
+                // Disable collisions between chassis and wheels
+                const WHEELS = 1 // Define bits for each shape type
+                const CHASSIS = 2
+                const GROUND = 4
+                const OTHER = 8
 
-                    wheelShape1.collisionGroup = wheelShape2.collisionGroup = WHEELS // Assign groups
-                    chassisShape.collisionGroup = CHASSIS
-                    planeShape.collisionGroup = GROUND
+                wheelShape1.collisionGroup = wheelShape2.collisionGroup = WHEELS // Assign groups
+                chassisShape.collisionGroup = CHASSIS
+                planeShape.collisionGroup = GROUND
 
-                    wheelShape1.collisionMask = wheelShape2.collisionMask = GROUND | OTHER // Wheels can only collide with ground
-                    chassisShape.collisionMask = GROUND | OTHER // Chassis can only collide with ground
-                    planeShape.collisionMask = WHEELS | CHASSIS | OTHER // Ground can collide with wheels and chassis
+                wheelShape1.collisionMask = wheelShape2.collisionMask = GROUND | OTHER // Wheels can only collide with ground
+                chassisShape.collisionMask = GROUND | OTHER // Chassis can only collide with ground
+                planeShape.collisionMask = WHEELS | CHASSIS | OTHER // Ground can collide with wheels and chassis
 
-                    // Constrain wheels to chassis
-                    const c1 = new p2.PrismaticConstraint(chassisBody, wheelBody1, {
-                        localAnchorA: [-0.5, -0.3],
+                // Constrain wheels to chassis
+                const c1 = new p2.PrismaticConstraint(chassisBody, wheelBody1, {
+                    localAnchorA: [-0.5, -0.3],
+                    localAnchorB: [0, 0],
+                    localAxisA: [0, 1],
+                    disableRotationalLock: true,
+                })
+                const c2 = new p2.PrismaticConstraint(chassisBody, wheelBody2, {
+                    localAnchorA: [0.5, -0.3],
+                    localAnchorB: [0, 0],
+                    localAxisA: [0, 1],
+                    disableRotationalLock: true,
+                })
+                c1.setLimits(-0.4, 0.2)
+                c2.setLimits(-0.4, 0.2)
+                world.addConstraint(c1)
+                world.addConstraint(c2)
+
+                // Add springs for the suspension
+                // Left spring
+                world.addSpring(
+                    new p2.LinearSpring(chassisBody, wheelBody1, {
+                        restLength: restLength,
+                        stiffness: stiffness,
+                        damping: damping,
+                        localAnchorA: [-0.5, 0],
                         localAnchorB: [0, 0],
-                        localAxisA: [0, 1],
-                        disableRotationalLock: true,
                     })
-                    const c2 = new p2.PrismaticConstraint(chassisBody, wheelBody2, {
-                        localAnchorA: [0.5, -0.3],
+                )
+                // Right spring
+                world.addSpring(
+                    new p2.LinearSpring(chassisBody, wheelBody2, {
+                        restLength: restLength,
+                        stiffness: stiffness,
+                        damping: damping,
+                        localAnchorA: [0.5, 0],
                         localAnchorB: [0, 0],
-                        localAxisA: [0, 1],
-                        disableRotationalLock: true,
                     })
-                    c1.setLimits(-0.4, 0.2)
-                    c2.setLimits(-0.4, 0.2)
-                    world.addConstraint(c1)
-                    world.addConstraint(c2)
+                )
 
-                    // Add springs for the suspension
-                    // Left spring
-                    world.addSpring(
-                        new p2.LinearSpring(chassisBody, wheelBody1, {
-                            restLength: restLength,
-                            stiffness: stiffness,
-                            damping: damping,
-                            localAnchorA: [-0.5, 0],
-                            localAnchorB: [0, 0],
-                        })
-                    )
-                    // Right spring
-                    world.addSpring(
-                        new p2.LinearSpring(chassisBody, wheelBody2, {
-                            restLength: restLength,
-                            stiffness: stiffness,
-                            damping: damping,
-                            localAnchorA: [0.5, 0],
-                            localAnchorB: [0, 0],
-                        })
-                    )
+                // Apply current engine torque after each step
+                let torque = 0
+                world.on('postStep', function (evt) {
+                    const max = 100
+                    if (wheelBody1.angularVelocity * torque < max) wheelBody1.angularForce += torque
+                    if (wheelBody2.angularVelocity * torque < max) wheelBody2.angularForce += torque
+                })
 
-                    // Apply current engine torque after each step
-                    let torque = 0
-                    world.on('postStep', function (evt) {
-                        const max = 100
-                        if (wheelBody1.angularVelocity * torque < max) wheelBody1.angularForce += torque
-                        if (wheelBody2.angularVelocity * torque < max) wheelBody2.angularForce += torque
-                    })
+                // Change the current engine torque with the left/right keys
+                document.addEventListener('keydown', function (evt) {
+                    let t = 5
+                    switch (evt.keyCode) {
+                        case 39: // right
+                            torque = -t
+                            break
+                        case 37: // left
+                            torque = t
+                            break
+                    }
+                })
+                document.addEventListener('keyup', function () {
+                    torque = 0
+                })
 
-                    // Change the current engine torque with the left/right keys
-                    document.addEventListener('keydown', function (evt) {
-                        let t = 5
-                        switch (evt.keyCode) {
-                            case 39: // right
-                                torque = -t
-                                break
-                            case 37: // left
-                                torque = t
-                                break
-                        }
-                    })
-                    document.addEventListener('keyup', function () {
-                        torque = 0
-                    })
+                world.on('addBody', function (evt) {
+                    evt.body.setDensity(1)
+                    for (let i = 0; i < body.shapes.length; i++) {
+                        const s = body.shapes[i]
+                        s.collisionMask = GROUND | WHEELS | CHASSIS | OTHER
+                        s.collisionGroup = OTHER
+                    }
+                })
 
-                    world.on('addBody', function (evt) {
-                        evt.body.setDensity(1)
-                        for (let i = 0; i < body.shapes.length; i++) {
-                            const s = body.shapes[i]
-                            s.collisionMask = GROUND | WHEELS | CHASSIS | OTHER
-                            s.collisionGroup = OTHER
-                        }
-                    })
-
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

@@ -10,50 +10,47 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             // Create demo application
-            createSandbox(
-                (context) => {
-                    // Create the world
-                    const world = new p2.World({
-                        gravity: [0, 0],
+            new Sandbox(({ frame }) => {
+                // Create the world
+                const world = new p2.World({
+                    gravity: [0, 0],
+                })
+
+                // Set stiffness of all contacts and constraints
+                world.setGlobalStiffness(1e18)
+                world.defaultContactMaterial.restitution = 0.1
+
+                for (let i = 0; i < 2; i++) {
+                    const y = (i - 0.5) * 1.5
+
+                    // Create circle bodies
+                    const circleA = new p2.Circle({ radius: 0.5 })
+                    const bodyA = new p2.Body({
+                        mass: 1,
+                        position: [-11, y],
+                        velocity: [100, 0],
+                        ccdSpeedThreshold: i === 0 ? 0 : -1,
                     })
+                    bodyA.addShape(circleA)
+                    world.addBody(bodyA)
 
-                    // Set stiffness of all contacts and constraints
-                    world.setGlobalStiffness(1e18)
-                    world.defaultContactMaterial.restitution = 0.1
+                    const circleB = new p2.Circle({ radius: 0.5 })
+                    const bodyB = new p2.Body({
+                        mass: 0,
+                        position: [0, y],
+                    })
+                    bodyB.addShape(circleB)
+                    world.addBody(bodyB)
+                }
 
-                    for (let i = 0; i < 2; i++) {
-                        const y = (i - 0.5) * 1.5
+                frame(0, 0, 20, 20)
 
-                        // Create circle bodies
-                        const circleA = new p2.Circle({ radius: 0.5 })
-                        const bodyA = new p2.Body({
-                            mass: 1,
-                            position: [-11, y],
-                            velocity: [100, 0],
-                            ccdSpeedThreshold: i === 0 ? 0 : -1,
-                        })
-                        bodyA.addShape(circleA)
-                        world.addBody(bodyA)
-
-                        const circleB = new p2.Circle({ radius: 0.5 })
-                        const bodyB = new p2.Body({
-                            mass: 0,
-                            position: [0, y],
-                        })
-                        bodyB.addShape(circleB)
-                        world.addBody(bodyB)
-                    }
-
-                    context.frame(0, 0, 20, 20)
-
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

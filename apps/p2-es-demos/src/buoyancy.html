@@ -11,113 +11,110 @@
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
             import * as p2 from 'p2-es'
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
 
-            createSandbox(
-                (context) => {
-                    const world = new p2.World({
-                        gravity: [0, -10],
-                    })
+            new Sandbox(() => {
+                const world = new p2.World({
+                    gravity: [0, -10],
+                })
 
-                    // Create "water surface"
-                    const planeShape = new p2.Plane()
-                    const plane = new p2.Body({
-                        position: [0, 0],
-                        collisionResponse: false,
-                    })
-                    plane.addShape(planeShape)
-                    world.addBody(plane)
+                // Create "water surface"
+                const planeShape = new p2.Plane()
+                const plane = new p2.Body({
+                    position: [0, 0],
+                    collisionResponse: false,
+                })
+                plane.addShape(planeShape)
+                world.addBody(plane)
 
-                    const body = new p2.Body({
-                        mass: 1,
-                        position: [1.5, 2],
-                        angularVelocity: 0.5,
-                    })
-                    body.addShape(new p2.Circle({ radius: 0.5 }), [0.5, 0], 0)
-                    body.addShape(new p2.Circle({ radius: 0.5 }), [-0.5, 0], 0)
-                    world.addBody(body)
+                const body = new p2.Body({
+                    mass: 1,
+                    position: [1.5, 2],
+                    angularVelocity: 0.5,
+                })
+                body.addShape(new p2.Circle({ radius: 0.5 }), [0.5, 0], 0)
+                body.addShape(new p2.Circle({ radius: 0.5 }), [-0.5, 0], 0)
+                world.addBody(body)
 
-                    const body2 = new p2.Body({
-                        mass: 1,
-                        position: [-1.5, 2],
-                        angularVelocity: 1,
-                    })
-                    body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [1, 0], 0)
-                    body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [0.5, 0], 0)
-                    body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-0.5, 0], 0)
-                    body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-1, 0], 0)
-                    world.addBody(body2)
+                const body2 = new p2.Body({
+                    mass: 1,
+                    position: [-1.5, 2],
+                    angularVelocity: 1,
+                })
+                body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [1, 0], 0)
+                body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [0.5, 0], 0)
+                body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-0.5, 0], 0)
+                body2.addShape(new p2.Box({ width: 0.5, height: 2 }), [-1, 0], 0)
+                world.addBody(body2)
 
-                    // Add forces every step
-                    world.on('postStep', function () {
-                        applyAABBBuoyancyForces(body, plane.position, k, c)
-                        applyAABBBuoyancyForces(body2, plane.position, k, c)
-                    })
+                // Add forces every step
+                world.on('postStep', function () {
+                    applyAABBBuoyancyForces(body, plane.position, k, c)
+                    applyAABBBuoyancyForces(body2, plane.position, k, c)
+                })
 
-                    const shapePosition = [0, 0]
-                    const centerOfBouyancy = [0, 0]
-                    const liftForce = [0, 0]
-                    const viscousForce = [0, 0]
-                    let shapeAngle = 0
+                const shapePosition = [0, 0]
+                const centerOfBouyancy = [0, 0]
+                const liftForce = [0, 0]
+                const viscousForce = [0, 0]
+                let shapeAngle = 0
 
-                    const k = 100 // up force per submerged "volume"
-                    const c = 0.8 // viscosity
-                    const v = [0, 0]
-                    const aabb = new p2.AABB()
-                    
-                    function applyAABBBuoyancyForces(body, planePosition, k, c) {
-                        for (let i = 0; i < body.shapes.length; i++) {
-                            const shape = body.shapes[i]
+                const k = 100 // up force per submerged "volume"
+                const c = 0.8 // viscosity
+                const v = [0, 0]
+                const aabb = new p2.AABB()
 
-                            // Get shape world transform
-                            body.vectorToWorldFrame(shapePosition, shape.position)
-                            p2.vec2.add(shapePosition, shapePosition, body.position)
-                            shapeAngle = shape.angle + body.angle
+                function applyAABBBuoyancyForces(body, planePosition, k, c) {
+                    for (let i = 0; i < body.shapes.length; i++) {
+                        const shape = body.shapes[i]
 
-                            // Get shape AABB
-                            shape.computeAABB(aabb, shapePosition, shapeAngle)
+                        // Get shape world transform
+                        body.vectorToWorldFrame(shapePosition, shape.position)
+                        p2.vec2.add(shapePosition, shapePosition, body.position)
+                        shapeAngle = shape.angle + body.angle
 
-                            let areaUnderWater
-                            if (aabb.upperBound[1] < planePosition[1]) {
-                                // Fully submerged
-                                p2.vec2.copy(centerOfBouyancy, shapePosition)
-                                areaUnderWater = shape.area
-                            } else if (aabb.lowerBound[1] < planePosition[1]) {
-                                // Partially submerged
-                                const width = aabb.upperBound[0] - aabb.lowerBound[0]
-                                const height = 0 - aabb.lowerBound[1]
-                                areaUnderWater = width * height
-                                p2.vec2.set(
-                                    centerOfBouyancy,
-                                    aabb.lowerBound[0] + width / 2,
-                                    aabb.lowerBound[1] + height / 2
-                                )
-                            } else {
-                                continue
-                            }
+                        // Get shape AABB
+                        shape.computeAABB(aabb, shapePosition, shapeAngle)
 
-                            // Compute lift force
-                            p2.vec2.subtract(liftForce, planePosition, centerOfBouyancy)
-                            p2.vec2.scale(liftForce, liftForce, areaUnderWater * k)
-                            liftForce[0] = 0
-
-                            // Make center of bouycancy relative to the body
-                            p2.vec2.subtract(centerOfBouyancy, centerOfBouyancy, body.position)
-
-                            // Viscous force
-                            body.getVelocityAtPoint(v, centerOfBouyancy)
-                            p2.vec2.scale(viscousForce, v, -c)
-
-                            // Apply forces
-                            body.applyForce(viscousForce, centerOfBouyancy)
-                            body.applyForce(liftForce, centerOfBouyancy)
+                        let areaUnderWater
+                        if (aabb.upperBound[1] < planePosition[1]) {
+                            // Fully submerged
+                            p2.vec2.copy(centerOfBouyancy, shapePosition)
+                            areaUnderWater = shape.area
+                        } else if (aabb.lowerBound[1] < planePosition[1]) {
+                            // Partially submerged
+                            const width = aabb.upperBound[0] - aabb.lowerBound[0]
+                            const height = 0 - aabb.lowerBound[1]
+                            areaUnderWater = width * height
+                            p2.vec2.set(
+                                centerOfBouyancy,
+                                aabb.lowerBound[0] + width / 2,
+                                aabb.lowerBound[1] + height / 2
+                            )
+                        } else {
+                            continue
                         }
-                    }
 
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                        // Compute lift force
+                        p2.vec2.subtract(liftForce, planePosition, centerOfBouyancy)
+                        p2.vec2.scale(liftForce, liftForce, areaUnderWater * k)
+                        liftForce[0] = 0
+
+                        // Make center of bouycancy relative to the body
+                        p2.vec2.subtract(centerOfBouyancy, centerOfBouyancy, body.position)
+
+                        // Viscous force
+                        body.getVelocityAtPoint(v, centerOfBouyancy)
+                        p2.vec2.scale(viscousForce, v, -c)
+
+                        // Apply forces
+                        body.applyForce(viscousForce, centerOfBouyancy)
+                        body.applyForce(liftForce, centerOfBouyancy)
+                    }
+                }
+
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

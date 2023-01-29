@@ -1,6 +1,7 @@
 import * as p2 from 'p2-es'
 import React from 'react'
-import { Sandbox, SandboxContext } from '../../src'
+import { SandboxContext } from '../../src'
+import { App } from '../../src/components/App'
 
 export const MultipleScenes = () => {
     const common = (context: SandboxContext) => {
@@ -58,7 +59,7 @@ export const MultipleScenes = () => {
     }
 
     return (
-        <Sandbox
+        <App
             setup={{
                 'Falling Sphere': { setup: sphere },
                 'Falling Box': { setup: box },

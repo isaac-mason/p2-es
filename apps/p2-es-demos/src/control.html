@@ -10,7 +10,7 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             let postStepHandler
@@ -32,101 +32,98 @@
                 return b - a + Math.PI * 2.0
             }
 
-            createSandbox(
-                (context) => {
-                    // Create the physics world
-                    const world = new p2.World({
-                        gravity: [0, 0],
+            new Sandbox(({ frame }) => {
+                // Create the physics world
+                const world = new p2.World({
+                    gravity: [0, 0],
+                })
+
+                // Add some boxes
+                for (let i = 0; i < 10; i++) {
+                    const boxBody = new p2.Body({
+                        mass: 0.5,
+                        damping: 0.99,
+                        angularDamping: 0.99,
+                        position: [(Math.random() - 0.5) * size, (Math.random() - 0.5) * size],
+                        angle: (Math.random() - 0.5) * Math.PI * 2,
                     })
+                    boxBody.addShape(new p2.Box({ width: 0.4, height: 0.4 }))
+                    world.addBody(boxBody)
+                }
 
-                    // Add some boxes
-                    for (let i = 0; i < 10; i++) {
-                        const boxBody = new p2.Body({
-                            mass: 0.5,
-                            damping: 0.99,
-                            angularDamping: 0.99,
-                            position: [(Math.random() - 0.5) * size, (Math.random() - 0.5) * size],
-                            angle: (Math.random() - 0.5) * Math.PI * 2,
-                        })
-                        boxBody.addShape(new p2.Box({ width: 0.4, height: 0.4 }))
-                        world.addBody(boxBody)
-                    }
+                // Add walls
+                createStaticBox(world, -size / 2, 0, 0.1, size)
+                createStaticBox(world, size / 2, 0, 0.1, size)
+                createStaticBox(world, 0, -size / 2, size, 0.1)
+                createStaticBox(world, 0, size / 2, size, 0.1)
 
-                    // Add walls
-                    createStaticBox(world, -size / 2, 0, 0.1, size)
-                    createStaticBox(world, size / 2, 0, 0.1, size)
-                    createStaticBox(world, 0, -size / 2, size, 0.1)
-                    createStaticBox(world, 0, size / 2, size, 0.1)
+                // Character
+                const characterBody = new p2.Body({
+                    mass: 1,
+                })
+                const characterShape = new p2.Circle({
+                    radius: 0.5,
+                })
+                characterBody.addShape(characterShape)
+                world.addBody(characterBody)
 
-                    // Character
-                    const characterBody = new p2.Body({
-                        mass: 1,
+                // Control body
+                const controlBody = new p2.Body({
+                    type: p2.Body.KINEMATIC,
+                    collisionResponse: false,
+                })
+                const controlShape = new p2.Circle({
+                    radius: 0.1,
+                })
+                controlBody.addShape(controlShape)
+                world.addBody(controlBody)
+
+                // Constrain control to character
+                const constraint = new p2.RevoluteConstraint(controlBody, characterBody, {
+                    localPivotA: [0, 0],
+                    localPivotB: [0, 0],
+                    maxForce: 40,
+                })
+                constraint.setMaxBias(0) // emulate friction
+                world.addConstraint(constraint)
+
+                const gear = new p2.GearConstraint(controlBody, characterBody, {
+                    maxTorque: 100,
+                })
+                gear.setMaxBias(0)
+                world.addConstraint(gear)
+
+                const mouseDelta = p2.vec2.create()
+                world.on(
+                    'postStep',
+                    (postStepHandler = () => {
+                        const mousePosition = context.pointer.primaryPointer.physicsPosition
+
+                        // turn the control body
+                        p2.vec2.subtract(mouseDelta, mousePosition, characterBody.position)
+                        controlBody.angularVelocity =
+                            10 * shortestArc(characterBody.angle, Math.atan2(mouseDelta[1], mouseDelta[0]))
+
+                        // drive towards the mouse
+                        if (p2.vec2.distance(mousePosition, characterBody.position) < 0.5) {
+                            p2.vec2.set(controlBody.velocity, 0, 0)
+                        } else {
+                            p2.vec2.copy(controlBody.velocity, mouseDelta)
+                            p2.vec2.normalize(controlBody.velocity, controlBody.velocity)
+                            p2.vec2.scale(controlBody.velocity, controlBody.velocity, 3)
+                        }
                     })
-                    const characterShape = new p2.Circle({
-                        radius: 0.5,
-                    })
-                    characterBody.addShape(characterShape)
-                    world.addBody(characterBody)
+                )
 
-                    // Control body
-                    const controlBody = new p2.Body({
-                        type: p2.Body.KINEMATIC,
-                        collisionResponse: false,
-                    })
-                    const controlShape = new p2.Circle({
-                        radius: 0.1,
-                    })
-                    controlBody.addShape(controlShape)
-                    world.addBody(controlBody)
+                frame(0, 0, 7, 7)
 
-                    // Constrain control to character
-                    const constraint = new p2.RevoluteConstraint(controlBody, characterBody, {
-                        localPivotA: [0, 0],
-                        localPivotB: [0, 0],
-                        maxForce: 40,
-                    })
-                    constraint.setMaxBias(0) // emulate friction
-                    world.addConstraint(constraint)
-
-                    const gear = new p2.GearConstraint(controlBody, characterBody, {
-                        maxTorque: 100,
-                    })
-                    gear.setMaxBias(0)
-                    world.addConstraint(gear)
-
-                    const mouseDelta = p2.vec2.create()
-                    world.on(
-                        'postStep',
-                        (postStepHandler = () => {
-                            const mousePosition = context.pointer.primaryPointer.physicsPosition
-
-                            // turn the control body
-                            p2.vec2.subtract(mouseDelta, mousePosition, characterBody.position)
-                            controlBody.angularVelocity =
-                                10 * shortestArc(characterBody.angle, Math.atan2(mouseDelta[1], mouseDelta[0]))
-
-                            // drive towards the mouse
-                            if (p2.vec2.distance(mousePosition, characterBody.position) < 0.5) {
-                                p2.vec2.set(controlBody.velocity, 0, 0)
-                            } else {
-                                p2.vec2.copy(controlBody.velocity, mouseDelta)
-                                p2.vec2.normalize(controlBody.velocity, controlBody.velocity)
-                                p2.vec2.scale(controlBody.velocity, controlBody.velocity, 3)
-                            }
-                        })
-                    )
-
-                    context.frame(0, 0, 7, 7)
-
-                    return {
-                        world,
-                        teardown: () => {
-                            world.off('postStep', postStepHandler)
-                        },
-                    }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return {
+                    world,
+                    teardown: () => {
+                        world.off('postStep', postStepHandler)
+                    },
+                }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

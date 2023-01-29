@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Compound objects demo - p2.js physics engine</title>
+        <title>Compound objects demo - p2-es physics engine</title>
         <link href="css/demo.css" rel="stylesheet" />
         <meta name="description" content="Shows how to add shapes with offset and rotation in a Body." />
         <meta charset="utf-8" />
@@ -10,11 +10,11 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             // Create demo application
-            createSandbox((context) => {
+            new Sandbox(({ frame }) => {
                 const N = 2
                 const M = 2
                 const d = 1.2
@@ -98,11 +98,10 @@
                 plane.addShape(planeShape)
                 world.addBody(plane)
 
-                context.frame(0, 0, 6, 6)
+                frame(0, 0, 6, 6)
 
                 return { world }
-            },
-            { domElement: document.getElementById('demo') })
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

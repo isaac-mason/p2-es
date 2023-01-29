@@ -10,86 +10,83 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
             const N = 10 // Number of circles
             const r = 0.1 // circle radius
 
             // Create demo application
-            createSandbox(
-                (context) => {
-                    const world = new p2.World({
-                        gravity: [0, -15],
+            new Sandbox(({ frame }) => {
+                const world = new p2.World({
+                    gravity: [0, -15],
+                })
+
+                world.solver.iterations = N
+
+                // Add a line
+                const lineBody = new p2.Body({
+                    mass: 1,
+                    position: [-1.5, -0.5],
+                    angle: Math.PI / 2,
+                    angularVelocity: 10,
+                })
+                lineBody.addShape(new p2.Line({ length: 1 }))
+                world.addBody(lineBody)
+
+                // Add a "null" body
+                const groundBody = new p2.Body()
+                world.addBody(groundBody)
+
+                const revolute = new p2.RevoluteConstraint(lineBody, groundBody, {
+                    worldPivot: [-1.5, 0],
+                })
+                world.addConstraint(revolute)
+
+                // Create circle rope
+                let lastBody
+                for (let i = N - 1; i >= 0; i--) {
+                    const x = 0
+                    const y = (N - i - N / 2) * r * 2.1
+                    const p = new p2.Body({
+                        mass: i == 0 ? 0 : 1,
+                        position: [x, y],
                     })
-
-                    world.solver.iterations = N
-
-                    // Add a line
-                    const lineBody = new p2.Body({
-                        mass: 1,
-                        position: [-1.5, -0.5],
-                        angle: Math.PI / 2,
-                        angularVelocity: 10,
-                    })
-                    lineBody.addShape(new p2.Line({ length: 1 }))
-                    world.addBody(lineBody)
-
-                    // Add a "null" body
-                    const groundBody = new p2.Body()
-                    world.addBody(groundBody)
-
-                    const revolute = new p2.RevoluteConstraint(lineBody, groundBody, {
-                        worldPivot: [-1.5, 0],
-                    })
-                    world.addConstraint(revolute)
-
-                    // Create circle rope
-                    let lastBody
-                    for (let i = N - 1; i >= 0; i--) {
-                        const x = 0
-                        const y = (N - i - N / 2) * r * 2.1
-                        const p = new p2.Body({
-                            mass: i == 0 ? 0 : 1,
-                            position: [x, y],
-                        })
-                        p.addShape(new p2.Circle({ radius: r }))
-                        world.addBody(p)
-                        if (lastBody) {
-                            var c = new p2.DistanceConstraint(p, lastBody)
-                            world.addConstraint(c)
-                        } else {
-                            p.velocity[0] = 10
-                        }
-                        lastBody = p
+                    p.addShape(new p2.Circle({ radius: r }))
+                    world.addBody(p)
+                    if (lastBody) {
+                        var c = new p2.DistanceConstraint(p, lastBody)
+                        world.addConstraint(c)
+                    } else {
+                        p.velocity[0] = 10
                     }
+                    lastBody = p
+                }
 
-                    // Create RevoluteConstraint
-                    const bodyA = new p2.Body({
-                        mass: 1,
-                        position: [3, 0],
-                        angularVelocity: 30,
-                    })
-                    bodyA.addShape(new p2.Circle({ radius: 1 }))
-                    world.addBody(bodyA)
-                    const bodyB = new p2.Body({
-                        mass: 0,
-                        position: [3, 4],
-                    })
-                    bodyB.addShape(new p2.Circle({ radius: 1 }))
-                    world.addBody(bodyB)
-                    const cr = new p2.RevoluteConstraint(bodyA, bodyB, {
-                        worldPivot: [3, 2],
-                    })
-                    cr.setLimits(-Math.PI / 4, Math.PI / 4)
-                    world.addConstraint(cr)
+                // Create RevoluteConstraint
+                const bodyA = new p2.Body({
+                    mass: 1,
+                    position: [3, 0],
+                    angularVelocity: 30,
+                })
+                bodyA.addShape(new p2.Circle({ radius: 1 }))
+                world.addBody(bodyA)
+                const bodyB = new p2.Body({
+                    mass: 0,
+                    position: [3, 4],
+                })
+                bodyB.addShape(new p2.Circle({ radius: 1 }))
+                world.addBody(bodyB)
+                const cr = new p2.RevoluteConstraint(bodyA, bodyB, {
+                    worldPivot: [3, 2],
+                })
+                cr.setLimits(-Math.PI / 4, Math.PI / 4)
+                world.addConstraint(cr)
 
-                    context.frame(0, 0, 8, 8)
+                frame(0, 0, 8, 8)
 
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>

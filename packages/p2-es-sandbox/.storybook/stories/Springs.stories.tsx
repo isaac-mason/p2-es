@@ -2,6 +2,7 @@ import * as p2 from 'p2-es'
 import { GSSolver } from 'p2-es'
 import React from 'react'
 import { Sandbox, SandboxContext } from '../../src'
+import { App } from '../../src/components/App'
 
 export const Springs = () => {
     const fn = (context: SandboxContext) => {
@@ -91,10 +92,14 @@ export const Springs = () => {
         capsuleBodyB.addShape(capsuleShapeB)
         world.addBody(capsuleBodyA)
         world.addBody(capsuleBodyB)
-        const rotationalSpring = new p2.RotationalSpring(capsuleBodyA, capsuleBodyB, {
-            stiffness: 10,
-            damping: 0.01,
-        })
+        const rotationalSpring = new p2.RotationalSpring(
+            capsuleBodyA,
+            capsuleBodyB,
+            {
+                stiffness: 10,
+                damping: 0.01,
+            }
+        )
         world.addSpring(rotationalSpring)
         const revolute = new p2.RevoluteConstraint(capsuleBodyA, capsuleBodyB, {
             localPivotA: [0.5, 0],
@@ -108,7 +113,7 @@ export const Springs = () => {
         return { world }
     }
 
-    return <Sandbox setup={fn} />
+    return <App setup={fn} />
 }
 
 export default {

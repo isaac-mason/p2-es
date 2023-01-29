@@ -10,82 +10,79 @@
     <body>
         <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
-            import { createSandbox } from '@p2-es/sandbox'
+            import { Sandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
 
-            createSandbox(
-                (context) => {
-                    // Create a World
-                    const world = new p2.World({
-                        gravity: [0, 0],
-                    })
+            new Sandbox(() => {
+                // Create a World
+                const world = new p2.World({
+                    gravity: [0, 0],
+                })
 
-                    // Create a dynamic body for the chassis
-                    const chassisBody = new p2.Body({
-                        mass: 1,
-                    })
-                    const boxShape = new p2.Box({ width: 0.5, height: 1 })
-                    chassisBody.addShape(boxShape)
-                    world.addBody(chassisBody)
+                // Create a dynamic body for the chassis
+                const chassisBody = new p2.Body({
+                    mass: 1,
+                })
+                const boxShape = new p2.Box({ width: 0.5, height: 1 })
+                chassisBody.addShape(boxShape)
+                world.addBody(chassisBody)
 
-                    // Create the vehicle
-                    const vehicle = new p2.TopDownVehicle(chassisBody)
+                // Create the vehicle
+                const vehicle = new p2.TopDownVehicle(chassisBody)
 
-                    // Add one front wheel and one back wheel - we don't actually need four :)
-                    const frontWheel = vehicle.addWheel({
-                        localPosition: [0, 0.5], // front
-                    })
-                    frontWheel.setSideFriction(4)
+                // Add one front wheel and one back wheel - we don't actually need four :)
+                const frontWheel = vehicle.addWheel({
+                    localPosition: [0, 0.5], // front
+                })
+                frontWheel.setSideFriction(4)
 
-                    // Back wheel
-                    const backWheel = vehicle.addWheel({
-                        localPosition: [0, -0.5], // back
-                    })
-                    backWheel.setSideFriction(3) // Less side friction on back wheel makes it easier to drift
+                // Back wheel
+                const backWheel = vehicle.addWheel({
+                    localPosition: [0, -0.5], // back
+                })
+                backWheel.setSideFriction(3) // Less side friction on back wheel makes it easier to drift
 
-                    vehicle.addToWorld(world)
+                vehicle.addToWorld(world)
 
-                    // Key controls
-                    const keys = {
-                        37: 0, // left
-                        39: 0, // right
-                        38: 0, // up
-                        40: 0, // down
-                    }
-                    const maxSteer = Math.PI / 5
-                    document.addEventListener('keydown', function (evt) {
-                        keys[evt.keyCode] = 1
-                        onInputChange()
-                    })
-                    document.addEventListener('keyup', function (evt) {
-                        keys[evt.keyCode] = 0
-                        onInputChange()
-                    })
+                // Key controls
+                const keys = {
+                    37: 0, // left
+                    39: 0, // right
+                    38: 0, // up
+                    40: 0, // down
+                }
+                const maxSteer = Math.PI / 5
+                document.addEventListener('keydown', function (evt) {
+                    keys[evt.keyCode] = 1
+                    onInputChange()
+                })
+                document.addEventListener('keyup', function (evt) {
+                    keys[evt.keyCode] = 0
+                    onInputChange()
+                })
 
-                    function onInputChange() {
-                        // Steer value zero means straight forward. Positive is left and negative right.
-                        frontWheel.steerValue = maxSteer * (keys[37] - keys[39])
+                function onInputChange() {
+                    // Steer value zero means straight forward. Positive is left and negative right.
+                    frontWheel.steerValue = maxSteer * (keys[37] - keys[39])
 
-                        // Engine force forward
-                        backWheel.engineForce = keys[38] * 7
+                    // Engine force forward
+                    backWheel.engineForce = keys[38] * 7
 
-                        backWheel.setBrakeForce(0)
-                        if (keys[40]) {
-                            if (backWheel.getSpeed() > 0.1) {
-                                // Moving forward - add some brake force to slow down
-                                backWheel.setBrakeForce(5)
-                            } else {
-                                // Moving backwards - reverse the engine force
-                                backWheel.setBrakeForce(0)
-                                backWheel.engineForce = -2
-                            }
+                    backWheel.setBrakeForce(0)
+                    if (keys[40]) {
+                        if (backWheel.getSpeed() > 0.1) {
+                            // Moving forward - add some brake force to slow down
+                            backWheel.setBrakeForce(5)
+                        } else {
+                            // Moving backwards - reverse the engine force
+                            backWheel.setBrakeForce(0)
+                            backWheel.engineForce = -2
                         }
                     }
+                }
 
-                    return { world }
-                },
-                { domElement: document.getElementById('demo') }
-            )
+                return { world }
+            }, document.getElementById('demo')).init()
         </script>
     </body>
 </html>
