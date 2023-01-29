@@ -60,6 +60,7 @@ export const MultipleScenes = () => {
 
     return (
         <App
+            title="Multiple Scenes"
             setup={{
                 'Falling Sphere': { setup: sphere },
                 'Falling Box': { setup: box },

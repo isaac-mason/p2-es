@@ -17,15 +17,22 @@ import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
+import { color } from '../theme/color'
 import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
-import { Controls } from './Controls'
+import { Controls } from './controls/Controls'
+import { Inspector } from './inspector/Inspector'
 import { Loop } from './Loop'
 import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
 import { PhysicsBodyRenderer } from './pixi/PhysicsBodyRenderer'
 import { PhysicsContactRenderer } from './pixi/PhysicsContactRenderer'
 import { PhysicsSpringRenderer } from './pixi/PhysicsSpringRenderer'
+import { CodeSvg } from './svgs/CodeSvg'
+import { ExternalLinkSvg } from './svgs/ExternalLinkSvg'
+import { PencilSvg } from './svgs/PencilSvg'
+import { RefreshSvg } from './svgs/RefreshSvg'
+import { SearchSvg } from './svgs/SearchSvg'
 import { CircleTool } from './tools/CircleTool'
 import { PickPanTool } from './tools/PickPanTool'
 import { PointerObserver } from './tools/PointerObserver'
@@ -58,9 +65,13 @@ const Wrapper = styled.div`
     align-items: stretch;
     justify-content: center;
     width: 100%;
-    height: 100%;
-    background-color: #fff;
+
+    ${up('md')} {
+        height: 100%;
+    }
 `
+
+const HEADER_HEIGHT = '50px'
 
 const Header = styled.div`
     display: flex;
@@ -69,37 +80,155 @@ const Header = styled.div`
     justify-content: space-between;
 
     width: calc(100% - 30px);
-    height: 40px;
+    height: ${HEADER_HEIGHT};
     padding: 0 15px;
-    border-bottom: 1px solid #333;
-    background-color: #181c20;
-    color: #fff;
+    border-bottom: 1px solid ${color.backgroundLight};
+    background-color: ${color.background};
+    color: ${color.highlight1};
 
     font-size: 0.9rem;
     font-family: 'Roboto Mono', monospace;
+
+    a {
+        color: ${color.highlight1};
+        text-decoration: none;
+    }
+
+    overflow-x: auto;
+
+    ${up('md')} {
+        overflow-x: hidden;
+    }
+`
+
+const ExternalLink = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.2em;
+
+    svg {
+        width: 15px;
+        stroke: ${color.highlight1};
+    }
+`
+
+const HeaderButton = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 30px;
+
+    text-align: center;
+
+    background-color: ${color.background};
+    &:hover {
+        background-color: ${color.backgroundLight};
+    }
+
+    * {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: ${color.highlight1};
+        font-weight: 400;
+    }
+
+    button {
+        background: none;
+        border: none;
+        padding: 0;
+        width: 35px;
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
+        stroke: #efefef;
+    }
+`
+
+const HeaderButtons = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+`
+
+const HeaderMiddle = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 2em;
+`
+
+const HeaderSandboxTitle = styled.div`
+    display: none;
+
+    ${up('md')} {
+        display: block;
+    }
 `
 
 const Main = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    height: 100%;
+    align-items: center;
+    justify-content: flex-start;
 
     ${up('md')} {
+        height: 100%;
         flex-direction: row;
         overflow: hidden;
     }
 `
 
-const CanvasWrapper = styled.div`
-    flex: none;
-    height: calc(100vh - 10em);
+const CanvasWrapper = styled.div<{ controlsHidden: boolean }>`
+    flex: 1;
     width: 100%;
 
+    min-height: ${({ controlsHidden }) =>
+        controlsHidden ? `calc(100vh - ${HEADER_HEIGHT})` : '70vh'};
+    max-height: ${({ controlsHidden }) =>
+        controlsHidden ? `calc(100vh - ${HEADER_HEIGHT})` : '70vh'};
+
+    height: 100%;
+
     ${up('md')} {
-        flex: 1;
+        min-height: unset;
+        max-height: unset;
         height: 100%;
+    }
+`
+
+const ControlsWrapper = styled.div<{ hidden: boolean }>`
+    flex: 1;
+    width: 100%;
+    min-height: 300px;
+    background-color: ${color.background};
+
+    ${up('md')} {
+        flex: none;
+        width: 320px;
+        height: 100%;
+        min-height: unset;
+        overflow-y: scroll;
+    }
+`
+
+const InspectorWrapper = styled.div`
+    position: absolute;
+    width: 300px;
+    top: 4em;
+    left: 1em;
+
+    ${up('md')} {
+        width: 320px;
     }
 `
 
@@ -111,8 +240,9 @@ export type AppProps = {
     codeLink?: string
 }
 
-const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
+const AppInner = ({ title, setup, codeLink }: AppProps) => {
     const [version, setVersion] = useState(0)
+    const reset = () => setVersion((v) => v + 1)
 
     const ecs = useECS()
 
@@ -125,6 +255,7 @@ const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
     const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
 
     const [controlsHidden, setControlsHidden] = useState(false)
+    const [inspectorHidden, setInspectorHidden] = useState(true)
 
     const [sandboxUpdateHandlers, setSandboxUpdateHandlers] = useState<Set<
         (delta: number) => void
@@ -137,6 +268,11 @@ const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
     const settingsComponent = useSingletonComponent(SettingsComponent)
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
     const pointerComponent = useSingletonComponent(PointerComponent)
+
+    useEffect(() => {
+        if (!pixiComponent) return
+        pixiComponent.onResize()
+    }, [pixiComponent, controlsHidden])
 
     /* create the pixi application */
     useEffect(() => {
@@ -152,12 +288,6 @@ const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
             destroyPixi()
         }
     }, [])
-
-    useEffect(() => {
-        if (pixiComponent) {
-            pixiComponent.onResize()
-        }
-    }, [controlsHidden, pixiComponent])
 
     /* create the current scene */
     useEffect(() => {
@@ -294,39 +424,96 @@ const AppInner = ({ title = 'sandbox', setup, codeLink }: AppProps) => {
             {/* UI */}
             <Wrapper>
                 <Header>
-                    <a>p2-es</a>
-                    <div>
-                        <div>
-                            <div>
-                                {title}{' '}
-                                {sceneNames.length > 1 ? ` - ${scene}` : ''}
-                            </div>
-                            <button
-                                onClick={() =>
-                                    setControlsHidden((current) => !current)
-                                }
-                            >
-                                {'🔧'}
-                            </button>
-                            {codeLink ? <a href={codeLink}>{'{ }'}</a> : null}
-                        </div>
-                    </div>
-                    <a>docs</a>
+                    <a href="https://p2-es.pmnd.rs" target="_blank">
+                        <ExternalLink>
+                            p2-es
+                            <ExternalLinkSvg />
+                        </ExternalLink>
+                    </a>
+
+                    <HeaderMiddle>
+                        {/* Title */}
+                        <HeaderSandboxTitle>
+                            {title}
+                            {title && sceneNames.length > 1 ? ' - ' : ''}
+                            {scene !== 'default' ? scene : ''}
+                        </HeaderSandboxTitle>
+
+                        <HeaderButtons>
+                            {/* Reset */}
+                            <HeaderButton title="Reset">
+                                <button onClick={() => reset()}>
+                                    <RefreshSvg />
+                                </button>
+                            </HeaderButton>
+
+                            {/* Toggle inspector */}
+                            <HeaderButton title="World Inspector">
+                                <button
+                                    onClick={() =>
+                                        setInspectorHidden(
+                                            (current) => !current
+                                        )
+                                    }
+                                >
+                                    <SearchSvg />
+                                </button>
+                            </HeaderButton>
+
+                            {/* Toggle controls */}
+                            <HeaderButton title="Controls">
+                                <button
+                                    onClick={() =>
+                                        setControlsHidden((current) => !current)
+                                    }
+                                >
+                                    <PencilSvg />
+                                </button>
+                            </HeaderButton>
+
+                            {/* Link to source code */}
+                            {codeLink !== undefined ? (
+                                <HeaderButton title="Sandbox Source Code">
+                                    <a href={codeLink} target="_blank">
+                                        <CodeSvg />
+                                    </a>
+                                </HeaderButton>
+                            ) : null}
+                        </HeaderButtons>
+                    </HeaderMiddle>
+
+                    <a href="https://p2-es.pmnd.rs/docs" target="_blank">
+                        <ExternalLink>
+                            docs
+                            <ExternalLinkSvg />
+                        </ExternalLink>
+                    </a>
                 </Header>
                 <Main>
-                    <CanvasWrapper ref={canvasWrapperElement} />
-
-                    <Controls
-                        hidden={controlsHidden}
-                        tool={tool}
-                        setTool={(t) => setTool(t)}
-                        currentScene={scene}
-                        scenes={sceneNames}
-                        setScene={(sceneName) => setScene(sceneName)}
-                        reset={() => setVersion((v) => v + 1)}
+                    {/* Pixi Canvas */}
+                    <CanvasWrapper
+                        ref={canvasWrapperElement}
+                        controlsHidden={controlsHidden}
                     />
+
+                    {/* Controls */}
+                    <ControlsWrapper hidden={controlsHidden}>
+                        <Controls
+                            tool={tool}
+                            setTool={(t) => setTool(t)}
+                            scene={scene}
+                            scenes={sceneNames}
+                            setScene={(sceneName) => setScene(sceneName)}
+                            reset={reset}
+                        />
+                    </ControlsWrapper>
                 </Main>
             </Wrapper>
+
+            {/* World Inspector */}
+            <InspectorWrapper>
+                <Inspector hidden={inspectorHidden} />
+            </InspectorWrapper>
 
             {/* Interaction */}
             <PointerObserver />
