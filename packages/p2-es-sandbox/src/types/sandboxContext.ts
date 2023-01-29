@@ -1,7 +1,9 @@
+import { Pixi } from '../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
-import type { SandboxEventMap } from './events'
 
 export type SandboxContext = {
+    pixi: Pixi
+
     pointer: PointerComponent
 
     centerCamera: (x: number, y: number) => void
@@ -16,22 +18,5 @@ export type SandboxContext = {
     onUpdate: {
         add: (callback: () => void) => void
         remove: (callback: () => void) => void
-    }
-
-    events: {
-        on<T extends keyof SandboxEventMap>(
-            event: T,
-            callback: (event: SandboxEventMap[T]) => void
-        ): void
-
-        off<T extends keyof SandboxEventMap>(
-            event: T,
-            callback: (event: SandboxEventMap[T]) => void
-        ): void
-
-        has<T extends keyof SandboxEventMap>(
-            event: T,
-            callback: (event: SandboxEventMap[T]) => void
-        ): boolean
     }
 }

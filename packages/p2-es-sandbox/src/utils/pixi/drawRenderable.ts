@@ -13,10 +13,10 @@ export type DrawRenderableProps = {
     renderable: p2.Body | p2.LinearSpring
     sprite: SpriteComponent
     lineColor: number
-    fillColor: number
+    fillColor?: number
     lineWidth: number
-    sleepOpacity: number
-    debugPolygons: boolean
+    sleepOpacity?: number
+    debugPolygons?: boolean
 }
 
 export const drawRenderable = ({
@@ -29,7 +29,7 @@ export const drawRenderable = ({
     sleepOpacity,
 }: DrawRenderableProps) => {
     sprite.drawnSleeping = false
-    sprite.drawnFillColor = fillColor
+    sprite.drawnFillColor = fillColor ?? null
     sprite.drawnLineColor = lineColor
     if (renderable instanceof p2.Body && renderable.shapes.length) {
         const isSleeping = renderable.sleepState === p2.Body.SLEEPING
@@ -41,15 +41,6 @@ export const drawRenderable = ({
 
         if (concavePath && !debugPolygons) {
             const path = concavePath.map((v) => [v[0], v[1]])
-            console.log({
-                graphics: sprite.graphics,
-                path: path.map((p) => [...p]),
-                lineColor,
-                fillColor,
-                isSleeping,
-                sleepOpacity,
-                lineWidth,
-            })
             drawPath({
                 graphics: sprite.graphics,
                 path,

@@ -9,7 +9,15 @@ import { drawRectangle } from '../../utils/pixi/drawRectangle'
 
 type RectangleToolState = 'default' | 'drawing'
 
-export const RectangleTool = () => {
+export type RectangleToolProps = {
+    newShapeCollisionGroup?: number
+    newShapeCollisionMask?: number
+}
+
+export const RectangleTool = ({
+    newShapeCollisionGroup,
+    newShapeCollisionMask,
+}: RectangleToolProps) => {
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
     const pixiComponent = useSingletonComponent(PixiComponent)
     const pointerEntity = useSingletonEntity([PointerComponent])
@@ -73,6 +81,15 @@ export const RectangleTool = () => {
                         ],
                     })
                     const rectangleShape = new p2.Box({ width, height })
+
+                    body.wakeUp()
+                    if (newShapeCollisionMask) {
+                        rectangleShape.collisionMask = newShapeCollisionMask
+                    }
+                    if (newShapeCollisionGroup) {
+                        rectangleShape.collisionGroup = newShapeCollisionGroup
+                    }
+
                     body.addShape(rectangleShape)
                     world.addBody(body)
                 }

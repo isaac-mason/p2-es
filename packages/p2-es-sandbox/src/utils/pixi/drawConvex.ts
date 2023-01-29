@@ -6,12 +6,12 @@ export type DrawConvexProps = {
     graphics: PIXI.Graphics
     verts: p2.Vec2[]
     lineColor: number
-    fillColor: number
+    fillColor?: number
     lineWidth: number
-    debugPolygons: boolean
+    debugPolygons?: boolean
     offset: p2.Vec2
-    isSleeping: boolean
-    sleepOpacity: number
+    isSleeping?: boolean
+    sleepOpacity?: number
 }
 
 export const drawConvex = ({

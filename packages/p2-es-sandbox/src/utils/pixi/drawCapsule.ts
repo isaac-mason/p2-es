@@ -10,10 +10,10 @@ export type DrawCapsuleProps = {
     len: number
     radius: number
     lineColor: number
-    fillColor: number
+    fillColor?: number
     lineWidth: number
-    isSleeping: boolean
-    sleepOpacity: number
+    isSleeping?: boolean
+    sleepOpacity?: number
 }
 
 export const drawCapsule = ({

@@ -9,7 +9,15 @@ import { drawCircle } from '../../utils/pixi/drawCircle'
 
 type CircleToolState = 'default' | 'drawing'
 
-export const CircleTool = () => {
+export type CircleToolProps = {
+    newShapeCollisionGroup?: number
+    newShapeCollisionMask?: number
+}
+
+export const CircleTool = ({
+    newShapeCollisionGroup,
+    newShapeCollisionMask,
+}: CircleToolProps) => {
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
     const pixiComponent = useSingletonComponent(PixiComponent)
     const pointerEntity = useSingletonEntity([PointerComponent])
@@ -52,6 +60,15 @@ export const CircleTool = () => {
                     const circle = new p2.Circle({
                         radius: circleRadius.current,
                     })
+
+                    body.wakeUp()
+                    if (newShapeCollisionMask) {
+                        circle.collisionMask = newShapeCollisionMask
+                    }
+                    if (newShapeCollisionGroup) {
+                        circle.collisionGroup = newShapeCollisionGroup
+                    }
+
                     body.addShape(circle)
                     world.addBody(body)
                 }

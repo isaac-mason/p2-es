@@ -1,45 +1,43 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Kinematic body demo - p2.js physics engine</title>
+        <title>Kinematic body demo - p2-es physics engine</title>
         <link href="css/demo.css" rel="stylesheet" />
         <meta name="description" content="Demonstrates kinematic bodies." />
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     </head>
     <body>
+        <div id="demo" style="width: 100%; height: 100vh"></div>
         <script type="module">
+            import { createSandbox } from '@p2-es/sandbox'
             import * as p2 from 'p2-es'
-            import { Demo } from './js/Demo.js'
 
-            // Create demo application
-            new Demo(function () {
+            createSandbox((context) => {
                 // Create a World
-                var world = new p2.World({
+                const world = new p2.World({
                     gravity: [0, -10],
                 })
 
-                this.setWorld(world)
-
                 // Create ground
-                var planeShape = new p2.Plane()
-                var plane = new p2.Body({
+                const planeShape = new p2.Plane()
+                const plane = new p2.Body({
                     position: [0, -2],
                 })
                 plane.addShape(planeShape)
                 world.addBody(plane)
 
                 // Create kinematic, moving box
-                var kinematicBody = new p2.Body({
+                const kinematicBody = new p2.Body({
                     type: p2.Body.KINEMATIC,
                     position: [0, 0.5],
                 })
-                var boxShape = new p2.Box({ width: 2, height: 0.5 })
+                const boxShape = new p2.Box({ width: 2, height: 0.5 })
                 kinematicBody.addShape(boxShape)
                 world.addBody(kinematicBody)
 
                 // Create dynamic box
-                var boxBody = new p2.Body({
+                const boxBody = new p2.Body({
                     mass: 1,
                     position: [0, 2],
                 })
@@ -47,7 +45,7 @@
                 world.addBody(boxBody)
 
                 // Create dynamic circle connected to the kinematic body
-                var circleBody = new p2.Body({
+                const circleBody = new p2.Body({
                     mass: 1,
                     position: [0, -0.5],
                     velocity: [-1, 0],
@@ -61,7 +59,10 @@
                     // Kinematic bodies are controlled via velocity.
                     kinematicBody.velocity[1] = 2 * Math.sin(world.time * 2)
                 })
-            })
+
+                return { world }
+            },
+            { domElement: document.getElementById('demo') })
         </script>
     </body>
 </html>

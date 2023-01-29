@@ -11,10 +11,6 @@ import {
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { Tool, Tools } from '../../types'
-import { CircleTool } from './CircleTool'
-import { PickPanTool } from './PickPanTool'
-import { PolygonTool } from './PolygonTool'
-import { RectangleTool } from './RectangleTool'
 
 const ControlsWrapper = styled.div`
     padding: 5px;
@@ -265,11 +261,6 @@ export const Controls = ({
                 />
                 <LevaPanel />
             </ControlsWrapper>
-
-            {tool === Tools.PICK_PAN && <PickPanTool />}
-            {tool === Tools.POLYGON && <PolygonTool />}
-            {tool === Tools.CIRCLE && <CircleTool />}
-            {tool === Tools.RECTANGLE && <RectangleTool />}
 
             <ecs.Entity>
                 <ecs.Component type={SettingsComponent} args={args} />

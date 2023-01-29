@@ -1,7 +1,6 @@
-import * as p2 from 'p2-es'
 import { Pixi } from '../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
-import { SandboxContext, SandboxEventMap, SandboxFunction } from '../types'
+import { SandboxContext, SandboxFunction } from '../types'
 
 export type SandboxFunctionEvaluatorProps = {
     pixi: Pixi
@@ -17,14 +16,6 @@ export const sandboxFunctionEvaluator = ({
     const { application, container } = pixi
 
     const updateHandlers = new Set<(delta: number) => void>()
-
-    const eventEmitter = new p2.EventEmitter<SandboxEventMap>()
-
-    const keyboardEventHandler = (event: KeyboardEvent) => {
-        eventEmitter.emit(event)
-    }
-    window.addEventListener('keydown', keyboardEventHandler)
-    window.addEventListener('keyup', keyboardEventHandler)
 
     const centerCamera = (x: number, y: number) => {
         container.position.x =
@@ -54,35 +45,20 @@ export const sandboxFunctionEvaluator = ({
         },
     }
 
-    const events: SandboxContext['events'] = {
-        on: (event, callback) => {
-            eventEmitter.on(event, callback)
-        },
-        off: (event, callback) => {
-            eventEmitter.off(event, callback)
-        },
-        has: (event, callback) => {
-            return eventEmitter.has(event, callback)
-        },
-    }
-
     const sandboxContext: SandboxContext = {
+        pixi,
         pointer,
         centerCamera,
         frame,
         onUpdate,
-        events,
     }
 
     // default view
     frame(0, 0, 8, 6)
 
-    const { world, defaultTool, teardown } = sandboxFunction(sandboxContext)
+    const { world, tools, teardown } = sandboxFunction(sandboxContext)
 
     const destroySandbox = () => {
-        window.removeEventListener('keydown', keyboardEventHandler)
-        window.removeEventListener('keyup', keyboardEventHandler)
-
         if (teardown) {
             teardown()
         }
@@ -90,7 +66,7 @@ export const sandboxFunctionEvaluator = ({
 
     return {
         world,
-        defaultTool,
+        tools,
         updateHandlers,
         sandboxContext,
         destroySandbox,

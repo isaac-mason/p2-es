@@ -7,6 +7,7 @@ import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
+import { drawRenderable } from '../../utils/pixi/drawRenderable'
 
 export const PhysicsSpringRenderer = () => {
     const ecs = useECS()
@@ -29,8 +30,19 @@ export const PhysicsSpringRenderer = () => {
             const { container } = pixiComponent
 
             for (const entity of uninitialised.entities) {
-                const { graphics } = entity.add(SpriteComponent)
-                container.addChild(graphics)
+                const { spring } = entity.get(PhysicsSpringComponent)
+                const sprite = entity.add(SpriteComponent)
+
+                if (spring instanceof LinearSpring) {
+                    drawRenderable({
+                        sprite,
+                        renderable: spring,
+                        lineColor: 0x000000,
+                        lineWidth: 0.01,
+                    })
+                }
+
+                container.addChild(sprite.graphics)
             }
 
             for (const entity of renderable.entities) {

@@ -9,7 +9,15 @@ import { drawPath } from '../../utils/pixi/drawPath'
 
 type PolygonToolState = 'default' | 'drawing'
 
-export const PolygonTool = () => {
+export type PolygonToolProps = {
+    newShapeCollisionGroup?: number
+    newShapeCollisionMask?: number
+}
+
+export const PolygonTool = ({
+    newShapeCollisionGroup,
+    newShapeCollisionMask,
+}: PolygonToolProps) => {
     const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
     const pixiComponent = useSingletonComponent(PixiComponent)
     const pointerEntity = useSingletonEntity([PointerComponent])
@@ -46,6 +54,17 @@ export const PolygonTool = () => {
                             removeCollinearPoints: 0.1,
                         })
                     ) {
+                        body.wakeUp()
+                        for (let i = 0; i < body.shapes.length; i++) {
+                            const s = body.shapes[i]
+                            if (newShapeCollisionMask) {
+                                s.collisionMask = newShapeCollisionMask
+                            }
+                            if (newShapeCollisionGroup) {
+                                s.collisionGroup = newShapeCollisionGroup
+                            }
+                        }
+
                         world.addBody(body)
                     }
                 }

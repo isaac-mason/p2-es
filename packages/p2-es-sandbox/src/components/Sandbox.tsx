@@ -20,8 +20,12 @@ import { STAGES } from '../stages'
 import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
+import { CircleTool } from './controls/CircleTool'
 import { Controls } from './controls/Controls'
+import { PickPanTool } from './controls/PickPanTool'
 import { PointerObserver } from './controls/PointerObserver'
+import { PolygonTool } from './controls/PolygonTool'
+import { RectangleTool } from './controls/RectangleTool'
 import { Loop } from './Loop'
 import { PhysicsAABBRenderer } from './pixi/PhysicsAABBRenderer'
 import { PhysicsBodyRenderer } from './pixi/PhysicsBodyRenderer'
@@ -159,21 +163,16 @@ const SandboxInner = ({
         if (!pixiComponent || !settingsComponent || !pointerComponent) return
 
         // evaluate the current scene's sandbox function
-        const {
-            world,
-            defaultTool,
-            updateHandlers,
-            sandboxContext,
-            destroySandbox,
-        } = sandboxFunctionEvaluator({
-            pixi: pixiComponent,
-            pointer: pointerComponent,
-            sandboxFunction: scenes[scene].setup,
-        })
+        const { world, tools, updateHandlers, sandboxContext, destroySandbox } =
+            sandboxFunctionEvaluator({
+                pixi: pixiComponent,
+                pointer: pointerComponent,
+                sandboxFunction: scenes[scene].setup,
+            })
 
-        // set the default tool
-        if (defaultTool) {
-            setTool(defaultTool)
+        // set tool config
+        if (tools?.default) {
+            setTool(tools.default)
         }
 
         // create entities for existing physics bodies and springs
@@ -314,6 +313,10 @@ const SandboxInner = ({
 
             {/* Interaction */}
             <PointerObserver />
+            {tool === Tools.PICK_PAN && <PickPanTool />}
+            {tool === Tools.POLYGON && <PolygonTool />}
+            {tool === Tools.CIRCLE && <CircleTool />}
+            {tool === Tools.RECTANGLE && <RectangleTool />}
 
             {/* Pixi */}
             <PhysicsBodyRenderer />
