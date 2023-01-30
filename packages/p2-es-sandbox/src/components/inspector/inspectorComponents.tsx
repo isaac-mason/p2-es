@@ -1,12 +1,12 @@
-import React from 'react'
 import { Body, Constraint, Spring } from 'p2-es'
+import React from 'react'
 import styled from 'styled-components'
 import { PhysicsBodyComponent } from '../../ecs/components/PhysicsBodyComponent'
-import { useECS } from '../../hooks/useECS'
-import { color } from '../../theme/color'
 import { PhysicsSpringComponent } from '../../ecs/components/PhysicsSpringComponent'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
+import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
+import { theme } from '../../theme/theme'
 
 const ListWrapper = styled.div`
     max-height: 200px;
@@ -15,7 +15,7 @@ const ListWrapper = styled.div`
 
 const InfoWrapper = styled.div`
     padding: 5px;
-    color: ${color.highlight1};
+    color: ${theme.color.highlight1};
 `
 
 const BodyInfo = (props: { body: Body }) => {

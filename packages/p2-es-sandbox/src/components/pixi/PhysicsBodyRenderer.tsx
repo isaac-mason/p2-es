@@ -9,11 +9,12 @@ import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
+import { theme } from '../../theme/theme'
 import { randomPastelHex } from '../../utils/color/randomPastelHex'
 import { drawRenderable } from '../../utils/pixi/drawRenderable'
 
 const LINE_WIDTH = 0.01
-const SLEEP_OPACITY = 0.2
+const SLEEP_OPACITY = 0.4
 
 export const PhysicsBodyRenderer = () => {
     const ecs = useECS()
@@ -32,15 +33,15 @@ export const PhysicsBodyRenderer = () => {
 
     const getIslandColor = useCallback((body: Body) => {
         if (body.islandId === -1) {
-            return 0xdddddd // Gray for static objects
+            return theme.canvas.body.static.fillColor // Gray for static objects
         }
         if (islandColors[body.islandId]) {
             return islandColors[body.islandId]
         }
-        const color = parseInt(randomPastelHex(), 16)
-        islandColors[body.islandId] = color
+        const pastelColor = parseInt(randomPastelHex(), 16)
+        islandColors[body.islandId] = pastelColor
 
-        return color
+        return pastelColor
     }, [])
 
     useFrame(
@@ -87,7 +88,9 @@ export const PhysicsBodyRenderer = () => {
                         renderable: body,
                         sprite,
                         fillColor: islandColor,
-                        lineColor: sprite.drawnLineColor ?? 0x000000,
+                        lineColor:
+                            sprite.drawnLineColor ??
+                            theme.canvas.body.lineColor,
                         debugPolygons: settings.debugPolygons,
                         lineWidth: LINE_WIDTH,
                         sleepOpacity: SLEEP_OPACITY,

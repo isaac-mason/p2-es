@@ -1,7 +1,7 @@
 import '@pixi/events'
 import { Application, Container, Graphics } from 'pixi.js'
 import { Pixi } from '../../ecs/components/singletons/PixiComponent'
-import { color } from '../../theme/color'
+import { theme } from '../../theme/theme'
 
 export const initPixi = (
     domElement: HTMLElement
@@ -12,7 +12,7 @@ export const initPixi = (
     domElement.appendChild(canvasElement)
 
     const application = new Application({
-        backgroundColor: color.canvas.background,
+        backgroundColor: theme.canvas.background,
         antialias: true,
         width: 1280,
         height: 720,
@@ -55,7 +55,7 @@ export const initPixi = (
         application.renderer.resize(w, h)
 
         background.clear()
-        background.beginFill(color.canvas.background)
+        background.beginFill(theme.canvas.background)
         background.drawRect(
             0,
             0,

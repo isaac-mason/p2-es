@@ -17,7 +17,7 @@ import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
-import { color } from '../theme/color'
+import { theme } from '../theme/theme'
 import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
@@ -82,15 +82,15 @@ const Header = styled.div`
     width: calc(100% - 30px);
     height: ${HEADER_HEIGHT};
     padding: 0 15px;
-    border-bottom: 1px solid ${color.backgroundLight};
-    background-color: ${color.background};
-    color: ${color.highlight1};
+    border-bottom: 1px solid ${theme.color.backgroundLight};
+    background-color: ${theme.color.background};
+    color: ${theme.color.highlight1};
 
     font-size: 0.9rem;
     font-family: 'Roboto Mono', monospace;
 
     a {
-        color: ${color.highlight1};
+        color: ${theme.color.highlight1};
         text-decoration: none;
     }
 
@@ -110,7 +110,7 @@ const ExternalLink = styled.div`
 
     svg {
         width: 15px;
-        stroke: ${color.highlight1};
+        stroke: ${theme.color.highlight1};
     }
 `
 
@@ -123,9 +123,9 @@ const HeaderButton = styled.div`
 
     text-align: center;
 
-    background-color: ${color.background};
+    background-color: ${theme.color.background};
     &:hover {
-        background-color: ${color.backgroundLight};
+        background-color: ${theme.color.backgroundLight};
     }
 
     * {
@@ -134,7 +134,7 @@ const HeaderButton = styled.div`
         display: flex;
         align-items: center;
         justify-content: center;
-        color: ${color.highlight1};
+        color: ${theme.color.highlight1};
         font-weight: 400;
     }
 
@@ -210,7 +210,7 @@ const ControlsWrapper = styled.div<{ hidden: boolean }>`
     flex: 1;
     width: 100%;
     min-height: 300px;
-    background-color: ${color.background};
+    background-color: ${theme.color.background};
 
     ${up('md')} {
         flex: none;
@@ -278,7 +278,6 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
     useEffect(() => {
         const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
 
-        console.log('creating pixi')
         const pixiEntity = ecs.world.create.entity()
         pixiEntity.add(PixiComponent, pixi)
 
@@ -286,7 +285,6 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
         console.log(CONSOLE_MESSAGE)
 
         return () => {
-            console.log('destroying pixi')
             pixiEntity.destroy()
             destroyPixi()
         }
@@ -392,13 +390,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                 entity.destroy()
             })
         }
-    }, [
-        pixiComponent?.id,
-        settingsComponent?.id,
-        pointerComponent?.id,
-        scene,
-        version,
-    ])
+    }, [pixiComponent?.id, pointerComponent?.id, scene, version])
 
     /* step the physics world */
     useFrame(

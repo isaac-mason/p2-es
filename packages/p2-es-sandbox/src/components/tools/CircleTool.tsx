@@ -4,6 +4,7 @@ import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWo
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
+import { theme } from '../../theme/theme'
 import { drawCircle } from '../../utils/pixi/drawCircle'
 
 type CircleToolState = 'default' | 'drawing'
@@ -42,7 +43,7 @@ export const CircleTool = ({
                 y: circleCenter.current[1],
                 angle: 0,
                 radius: circleRadius.current,
-                lineColor: 0x000000,
+                lineColor: theme.canvas.body.highlight,
                 lineWidth: 0.01,
             })
         }
