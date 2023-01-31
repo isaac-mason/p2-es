@@ -6,7 +6,7 @@ import { PhysicsSpringComponent } from '../../ecs/components/PhysicsSpringCompon
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { theme } from '../../theme/theme'
+import { interfaceTheme } from '../../theme/interfaceTheme'
 
 const ListWrapper = styled.div`
     max-height: 200px;
@@ -15,7 +15,7 @@ const ListWrapper = styled.div`
 
 const InfoWrapper = styled.div`
     padding: 5px;
-    color: ${theme.color.highlight1};
+    color: ${interfaceTheme.color.highlight1};
 `
 
 const BodyInfo = (props: { body: Body }) => {

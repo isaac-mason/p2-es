@@ -4,7 +4,7 @@ import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWo
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { theme } from '../../theme/theme'
+import { canvasTheme } from '../../theme/canvasTheme'
 import { drawPath } from '../../utils/pixi/drawPath'
 
 type PolygonToolState = 'default' | 'drawing'
@@ -39,8 +39,8 @@ export const PolygonTool = ({
             drawPath({
                 graphics,
                 path: polygonPoints.current.map((point) => [...point]),
-                lineColor: theme.canvas.body.highlight,
-                lineWidth: 0.01,
+                lineColor: canvasTheme.body.lineColor,
+                lineWidth: canvasTheme.lineWidth,
             })
         }
 

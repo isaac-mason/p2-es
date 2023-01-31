@@ -1,57 +1,92 @@
-import { Body } from 'p2-es'
-import { useCallback } from 'react'
+import { Body, Shape } from 'p2-es'
+import { useCallback, useEffect } from 'react'
 import { PhysicsBodyComponent } from '../../ecs/components/PhysicsBodyComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
-import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import { SettingsComponent } from '../../ecs/components/singletons/SettingsComponent'
 import { SpriteComponent } from '../../ecs/components/SpriteComponent'
 import { useConst } from '../../hooks/useConst'
 import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
-import { theme } from '../../theme/theme'
+import { canvasTheme } from '../../theme/canvasTheme'
 import { randomPastelHex } from '../../utils/color/randomPastelHex'
 import { drawRenderable } from '../../utils/pixi/drawRenderable'
-
-const LINE_WIDTH = 0.01
-const SLEEP_OPACITY = 0.4
 
 export const PhysicsBodyRenderer = () => {
     const ecs = useECS()
 
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const settingsComponent = useSingletonComponent(SettingsComponent)
+    const pixi = useSingletonComponent(PixiComponent)
+    const settings = useSingletonComponent(SettingsComponent)
 
     const uninitialised = ecs.useQuery({
         all: [PhysicsBodyComponent],
         not: [SpriteComponent],
     })
-
     const renderable = ecs.useQuery([PhysicsBodyComponent, SpriteComponent])
 
-    const islandColors = useConst<{ [body: number]: number }>(() => ({}))
+    const bodyIdToColor = useConst<{ [body: number]: number }>(() => ({}))
+    const islandIdToColor = useConst<{ [body: number]: number }>(() => ({}))
 
     const getIslandColor = useCallback((body: Body) => {
         if (body.islandId === -1) {
-            return theme.canvas.body.static.fillColor // Gray for static objects
+            return canvasTheme.body.static.fillColor // Gray for static objects
         }
-        if (islandColors[body.islandId]) {
-            return islandColors[body.islandId]
-        }
-        const pastelColor = parseInt(randomPastelHex(), 16)
-        islandColors[body.islandId] = pastelColor
 
-        return pastelColor
+        let color = islandIdToColor[body.islandId]
+        if (color) {
+            return color
+        }
+        color = parseInt(randomPastelHex(), 16)
+        islandIdToColor[body.islandId] = color
+
+        return color
     }, [])
+
+    const getBodyColor = useCallback((body: Body) => {
+        if (body.type === Body.STATIC) {
+            return canvasTheme.body.static.fillColor // Gray for static objects
+        }
+
+        let color = bodyIdToColor[body.id]
+        if (color) {
+            return color
+        }
+        color = parseInt(randomPastelHex(), 16)
+        bodyIdToColor[body.id] = color
+
+        return color
+    }, [])
+
+    useEffect(() => {
+        renderable.entities.forEach((e) => {
+            const { body } = e.get(PhysicsBodyComponent)
+            if (body.shapes.some((s) => s.type === Shape.CONVEX)) {
+                e.get(SpriteComponent).dirty = true
+            }
+        })
+    }, [settings?.debugPolygons])
+
+    useEffect(() => {
+        renderable.entities.forEach((e) => {
+            e.get(SpriteComponent).dirty = true
+        })
+    }, [settings?.bodySleepOpacity])
 
     useFrame(
         () => {
-            if (!settingsComponent || !pixiComponent) {
+            if (!settings || !pixi) {
                 return
             }
 
-            const { settings } = settingsComponent
-            const { container } = pixiComponent
+            const {
+                renderInterpolatedPositions: useInterpolatedPositions,
+                paused,
+                bodyIslandColors,
+                bodySleepOpacity,
+                debugPolygons,
+            } = settings
+            const { container } = pixi
 
             for (const entity of uninitialised.entities) {
                 const { graphics } = entity.add(SpriteComponent)
@@ -64,7 +99,7 @@ export const PhysicsBodyRenderer = () => {
                 const { graphics } = sprite
 
                 // update body transform
-                if (settings.useInterpolatedPositions && !settings.paused) {
+                if (useInterpolatedPositions && !paused) {
                     const [x, y] = body.interpolatedPosition
                     graphics.position.x = x
                     graphics.position.y = y
@@ -78,27 +113,37 @@ export const PhysicsBodyRenderer = () => {
 
                 // update graphics if body changed sleepState or island
                 const isSleeping = body.sleepState === Body.SLEEPING
-                const islandColor = getIslandColor(body)
+                let color: number
+                if (bodyIslandColors) {
+                    color = getIslandColor(body)
+                } else {
+                    color = getBodyColor(body)
+                }
+
                 if (
                     sprite.drawnSleeping !== isSleeping ||
-                    sprite.drawnFillColor !== islandColor
+                    sprite.drawnFillColor !== color ||
+                    sprite.dirty
                 ) {
+                    sprite.dirty = false
+
                     graphics.clear()
                     drawRenderable({
                         renderable: body,
                         sprite,
-                        fillColor: islandColor,
+                        fillColor: color,
                         lineColor:
-                            sprite.drawnLineColor ??
-                            theme.canvas.body.lineColor,
-                        debugPolygons: settings.debugPolygons,
-                        lineWidth: LINE_WIDTH,
-                        sleepOpacity: SLEEP_OPACITY,
+                            sprite.drawnLineColor ?? canvasTheme.body.lineColor,
+                        debugPolygons,
+                        lineWidth: canvasTheme.lineWidth,
+                        sleepOpacity: bodySleepOpacity
+                            ? canvasTheme.body.sleepOpacity
+                            : 1,
                     })
                 }
             }
         },
-        [pixiComponent, settingsComponent],
+        [pixi?.id, settings?.id],
         STAGES.RENDER_BODIES
     )
 

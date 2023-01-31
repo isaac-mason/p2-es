@@ -1,7 +1,7 @@
 import { LinearSpring, vec2 } from 'p2-es'
 import { PhysicsSpringComponent } from '../../ecs/components/PhysicsSpringComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
-import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import { SettingsComponent } from '../../ecs/components/singletons/SettingsComponent'
 import { SpriteComponent } from '../../ecs/components/SpriteComponent'
 import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
@@ -26,7 +26,7 @@ export const PhysicsSpringRenderer = () => {
         () => {
             if (!settingsComponent || !pixiComponent) return
 
-            const { settings } = settingsComponent
+            const { renderInterpolatedPositions, paused } = settingsComponent
             const { container } = pixiComponent
 
             for (const entity of uninitialised.entities) {
@@ -59,7 +59,7 @@ export const PhysicsSpringRenderer = () => {
                     const X = vec2.fromValues(1, 0)
                     const distVec = vec2.fromValues(0, 0)
 
-                    if (settings.useInterpolatedPositions && !settings.paused) {
+                    if (renderInterpolatedPositions && !paused) {
                         vec2.toGlobalFrame(
                             worldAnchorA,
                             spring.localAnchorA,

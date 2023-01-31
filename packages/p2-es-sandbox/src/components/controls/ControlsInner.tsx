@@ -8,21 +8,27 @@ import {
 import { ButtonInput } from 'leva/plugin'
 import React, { useEffect, useMemo } from 'react'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
+import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import {
     Settings,
     SettingsComponent,
-} from '../../ecs/components/singletons/SettingsSingletonComponent'
+} from '../../ecs/components/singletons/SettingsComponent'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { levaTheme } from '../../theme/levaTheme'
 import { Tools } from '../../types'
 import { ControlsProps } from './Controls'
 
-const defaultSettings = {
+const defaultSettings: Omit<Settings, 'timeStep'> & {
+    physicsStepsPerSecond: number
+} = {
     physicsStepsPerSecond: 60,
     maxSubSteps: 3,
     paused: false,
-    useInterpolatedPositions: true,
+    renderInterpolatedPositions: true,
+    bodyIds: false,
+    bodyIslandColors: true,
+    bodySleepOpacity: true,
     drawContacts: false,
     drawAABBs: false,
     debugPolygons: false,
@@ -77,7 +83,8 @@ export const ControlsInner = ({
 
     const ecs = useECS()
 
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
+    const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
+    const pixi = useSingletonComponent(PixiComponent)
 
     useButtonGroupControls('Scene', {
         options: scenes.map((s, idx) => ({
@@ -102,43 +109,32 @@ export const ControlsInner = ({
         store,
     })
 
-    const [
-        {
-            physicsStepsPerSecond,
-            maxSubSteps,
-            paused,
-            useInterpolatedPositions,
-        },
-        setPhysics,
-    ] = useControls(
-        'Physics',
-        () => ({
-            paused: {
-                label: 'Paused [p] [space]',
-                value: defaultSettings.paused,
-            },
-            physicsStepsPerSecond: {
-                label: 'Steps per second',
-                value: defaultSettings.physicsStepsPerSecond,
-            },
-            maxSubSteps: {
-                label: 'Max sub steps',
-                value: defaultSettings.maxSubSteps,
-            },
-            useInterpolatedPositions: {
-                label: 'Interpolated positions',
-                value: defaultSettings.useInterpolatedPositions,
-            },
-        }),
-        { store }
-    )
+    const [{ physicsStepsPerSecond, maxSubSteps, paused }, setPhysics] =
+        useControls(
+            'Physics',
+            () => ({
+                paused: {
+                    label: 'Paused [p] [space]',
+                    value: defaultSettings.paused,
+                },
+                physicsStepsPerSecond: {
+                    label: 'Steps per second',
+                    value: defaultSettings.physicsStepsPerSecond,
+                },
+                maxSubSteps: {
+                    label: 'Max sub steps',
+                    value: defaultSettings.maxSubSteps,
+                },
+            }),
+            { store }
+        )
 
     const timeStep = 1 / physicsStepsPerSecond
 
     const manualStep = () => {
-        if (!physicsWorldComponent) return
+        if (!physicsWorld) return
 
-        const { world } = physicsWorldComponent
+        const { world } = physicsWorld
 
         setPhysics({ paused: true })
         world.step(timeStep, timeStep)
@@ -155,30 +151,58 @@ export const ControlsInner = ({
             }),
         },
         { store },
-        [physicsWorldComponent, timeStep, reset]
+        [physicsWorld, timeStep, reset]
     )
 
-    const [{ drawContacts, drawAABBs, debugPolygons }, setRendering] =
-        useControls(
-            'Rendering',
-            () => ({
-                drawContacts: {
-                    label: 'Draw contacts [c]',
-                    value: defaultSettings.drawContacts,
-                },
-                drawAABBs: {
-                    label: 'Draw AABBs [t]',
-                    value: defaultSettings.drawAABBs,
-                },
-                debugPolygons: {
-                    label: 'Debug polygons',
-                    value: defaultSettings.debugPolygons,
-                },
-            }),
-            { store }
-        )
+    const [
+        {
+            bodyIds,
+            bodyIslandColors,
+            bodySleepOpacity,
+            drawContacts,
+            drawAABBs,
+            debugPolygons,
+            renderInterpolatedPositions,
+        },
+        setRendering,
+    ] = useControls(
+        'Rendering',
+        () => ({
+            drawContacts: {
+                label: 'Draw contacts [c]',
+                value: defaultSettings.drawContacts,
+            },
+            drawAABBs: {
+                label: 'Draw AABBs [t]',
+                value: defaultSettings.drawAABBs,
+            },
+            bodyIds: {
+                label: 'Body ids',
+                value: defaultSettings.drawAABBs,
+            },
+            bodyIslandColors: {
+                label: 'Body island colors',
+                value: defaultSettings.bodyIslandColors,
+            },
+            bodySleepOpacity: {
+                label: 'Body sleep opacity',
+                value: defaultSettings.bodyIslandColors,
+            },
+            debugPolygons: {
+                label: 'Debug polygons',
+                value: defaultSettings.debugPolygons,
+            },
+            renderInterpolatedPositions: {
+                label: 'Interpolated positions',
+                value: defaultSettings.renderInterpolatedPositions,
+            },
+        }),
+        { store }
+    )
 
     useEffect(() => {
+        if (!pixi) return
+
         const handler = (event: KeyboardEvent) => {
             const key = event.key.toLowerCase()
 
@@ -227,11 +251,11 @@ export const ControlsInner = ({
             }
         }
 
-        window.addEventListener('keydown', handler)
+        pixi.domElement.addEventListener('keydown', handler)
         return () => {
-            window.removeEventListener('keydown', handler)
+            pixi.domElement.removeEventListener('keydown', handler)
         }
-    }, [physicsWorldComponent?.id, paused, drawContacts, drawAABBs, reset])
+    }, [physicsWorld?.id, pixi?.id, paused, drawContacts, drawAABBs, reset])
 
     const settingsComponentArgs: [Settings] = useMemo(
         () => [
@@ -239,7 +263,10 @@ export const ControlsInner = ({
                 timeStep,
                 maxSubSteps,
                 paused,
-                useInterpolatedPositions,
+                renderInterpolatedPositions,
+                bodyIds,
+                bodyIslandColors,
+                bodySleepOpacity,
                 drawContacts,
                 drawAABBs,
                 debugPolygons,
@@ -249,7 +276,10 @@ export const ControlsInner = ({
             timeStep,
             maxSubSteps,
             paused,
-            useInterpolatedPositions,
+            renderInterpolatedPositions,
+            bodyIds,
+            bodyIslandColors,
+            bodySleepOpacity,
             drawContacts,
             drawAABBs,
             debugPolygons,

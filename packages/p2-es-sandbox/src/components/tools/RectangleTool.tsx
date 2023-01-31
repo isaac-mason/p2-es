@@ -4,7 +4,7 @@ import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWo
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../../ecs/components/singletons/PointerComponent'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
-import { theme } from '../../theme/theme'
+import { canvasTheme } from '../../theme/canvasTheme'
 import { drawRectangle } from '../../utils/pixi/drawRectangle'
 
 type RectangleToolState = 'default' | 'drawing'
@@ -50,8 +50,8 @@ export const RectangleTool = ({
                 w: width,
                 h: height,
                 angle: 0,
-                lineColor: theme.canvas.body.highlight,
-                lineWidth: 0.01,
+                lineColor: canvasTheme.body.lineColor,
+                lineWidth: canvasTheme.lineWidth,
             })
         }
 

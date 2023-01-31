@@ -9,7 +9,7 @@ import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent
 import { PhysicsWorldComponent } from '../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
-import { SettingsComponent } from '../ecs/components/singletons/SettingsSingletonComponent'
+import { SettingsComponent } from '../ecs/components/singletons/SettingsComponent'
 import { createWorld } from '../ecs/createWorld'
 import { WorldContextProvider } from '../ecs/worldContext'
 import { useConst } from '../hooks/useConst'
@@ -17,7 +17,7 @@ import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
-import { theme } from '../theme/theme'
+import { interfaceTheme } from '../theme/interfaceTheme'
 import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
@@ -82,15 +82,15 @@ const Header = styled.div`
     width: calc(100% - 30px);
     height: ${HEADER_HEIGHT};
     padding: 0 15px;
-    border-bottom: 1px solid ${theme.color.backgroundLight};
-    background-color: ${theme.color.background};
-    color: ${theme.color.highlight1};
+    border-bottom: 1px solid ${interfaceTheme.color.backgroundLight};
+    background-color: ${interfaceTheme.color.background};
+    color: ${interfaceTheme.color.highlight1};
 
     font-size: 0.9rem;
     font-family: 'Roboto Mono', monospace;
 
     a {
-        color: ${theme.color.highlight1};
+        color: ${interfaceTheme.color.highlight1};
         text-decoration: none;
     }
 
@@ -110,7 +110,7 @@ const ExternalLink = styled.div`
 
     svg {
         width: 15px;
-        stroke: ${theme.color.highlight1};
+        stroke: ${interfaceTheme.color.highlight1};
     }
 `
 
@@ -123,9 +123,9 @@ const HeaderButton = styled.div`
 
     text-align: center;
 
-    background-color: ${theme.color.background};
+    background-color: ${interfaceTheme.color.background};
     &:hover {
-        background-color: ${theme.color.backgroundLight};
+        background-color: ${interfaceTheme.color.backgroundLight};
     }
 
     * {
@@ -134,7 +134,7 @@ const HeaderButton = styled.div`
         display: flex;
         align-items: center;
         justify-content: center;
-        color: ${theme.color.highlight1};
+        color: ${interfaceTheme.color.highlight1};
         font-weight: 400;
     }
 
@@ -210,7 +210,7 @@ const ControlsWrapper = styled.div<{ hidden: boolean }>`
     flex: 1;
     width: 100%;
     min-height: 300px;
-    background-color: ${theme.color.background};
+    background-color: ${interfaceTheme.color.background};
 
     ${up('md')} {
         flex: none;
@@ -264,22 +264,24 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
     const bodyEntities: Map<Body, Entity> = useConst(() => new Map())
     const springEntities: Map<Spring, Entity> = useConst(() => new Map())
 
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const settingsComponent = useSingletonComponent(SettingsComponent)
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
-    const pointerComponent = useSingletonComponent(PointerComponent)
+    const pixi = useSingletonComponent(PixiComponent)
+    const settings = useSingletonComponent(SettingsComponent)
+    const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
+    const pointer = useSingletonComponent(PointerComponent)
 
     useEffect(() => {
-        if (!pixiComponent) return
-        pixiComponent.onResize()
-    }, [pixiComponent?.id, controlsHidden])
+        if (!pixi) return
+        pixi.onResize()
+    }, [pixi?.id, controlsHidden])
 
     /* create the pixi application */
     useEffect(() => {
-        const { destroyPixi, ...pixi } = initPixi(canvasWrapperElement.current!)
+        const { destroyPixi, ...pixiObjects } = initPixi(
+            canvasWrapperElement.current!
+        )
 
         const pixiEntity = ecs.world.create.entity()
-        pixiEntity.add(PixiComponent, pixi)
+        pixiEntity.add(PixiComponent, pixiObjects)
 
         // eslint-disable-next-line no-console
         console.log(CONSOLE_MESSAGE)
@@ -292,13 +294,13 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
 
     /* create the current scene */
     useEffect(() => {
-        if (!pixiComponent || !settingsComponent || !pointerComponent) return
+        if (!pixi || !settings || !pointer) return
 
         // evaluate the current scene's sandbox function
         const { world, tools, updateHandlers, sandboxContext, destroySandbox } =
             sandboxFunctionEvaluator({
-                pixi: pixiComponent,
-                pointer: pointerComponent,
+                pixi,
+                pointer,
                 sandboxFunction: scenes[scene].setup,
             })
 
@@ -390,22 +392,20 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                 entity.destroy()
             })
         }
-    }, [pixiComponent?.id, pointerComponent?.id, scene, version])
+    }, [pixi?.id, pointer?.id, scene, version])
 
     /* step the physics world */
     useFrame(
         (delta) => {
-            if (!settingsComponent || !physicsWorldComponent) return
+            if (!settings || !physicsWorld) return
 
-            const {
-                settings: { timeStep, maxSubSteps, paused },
-            } = settingsComponent
-            const { world } = physicsWorldComponent
+            const { timeStep, maxSubSteps, paused } = settings
+            const { world } = physicsWorld
 
             if (paused) return
             world.step(timeStep, delta, maxSubSteps)
         },
-        [settingsComponent?.id, physicsWorldComponent?.id],
+        [settings?.id, physicsWorld?.id],
         STAGES.PHYSICS
     )
 

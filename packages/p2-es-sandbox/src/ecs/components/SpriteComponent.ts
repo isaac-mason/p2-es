@@ -10,11 +10,14 @@ export class SpriteComponent extends Component {
 
     drawnFillColor!: number | null
 
+    dirty!: boolean
+
     construct() {
         this.graphics = new Graphics()
         this.drawnSleeping = null
         this.drawnLineColor = null
         this.drawnFillColor = null
+        this.dirty = false
     }
 
     onDestroy(): void {

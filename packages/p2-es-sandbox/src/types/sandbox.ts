@@ -1,6 +1,7 @@
 import type { World } from 'p2-es'
 import { Pixi } from '../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
+import { Settings } from '../ecs/components/singletons/SettingsComponent'
 import { Tool } from './tool'
 
 export type SandboxContext = {
@@ -33,6 +34,7 @@ export type SandboxConfig = {
     world: World
     teardown?: () => void
     tools?: SandboxToolsConfig
+    settings?: Partial<Settings>
 }
 
 export type SandboxFunction = (context: SandboxContext) => SandboxConfig

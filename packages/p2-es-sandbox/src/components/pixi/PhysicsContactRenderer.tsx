@@ -1,34 +1,32 @@
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
-import { SettingsComponent } from '../../ecs/components/singletons/SettingsSingletonComponent'
+import { SettingsComponent } from '../../ecs/components/singletons/SettingsComponent'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
-
-const LINE_WIDTH = 0.01
+import { canvasTheme } from '../../theme/canvasTheme'
 
 export const PhysicsContactRenderer = () => {
-    const pixiComponent = useSingletonComponent(PixiComponent)
-    const physicsWorldComponent = useSingletonComponent(PhysicsWorldComponent)
-    const settingsComponent = useSingletonComponent(SettingsComponent)
+    const pixi = useSingletonComponent(PixiComponent)
+    const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
+    const settings = useSingletonComponent(SettingsComponent)
 
     useFrame(
         () => {
-            if (!settingsComponent || !pixiComponent || !physicsWorldComponent)
-                return
+            if (!settings || !pixi || !physicsWorld) return
 
-            const { settings } = settingsComponent
-            const { graphics, container } = pixiComponent
-            const { world } = physicsWorldComponent
+            const { drawContacts } = settings
+            const { graphics, container } = pixi
+            const { world } = physicsWorld
 
             // Draw contacts
-            if (settings.drawContacts) {
+            if (drawContacts) {
                 graphics.contacts.clear()
                 container.removeChild(graphics.contacts)
                 container.addChild(graphics.contacts)
 
                 const g = graphics.contacts
-                g.lineStyle(LINE_WIDTH, 0x000000, 1)
+                g.lineStyle(canvasTheme.lineWidth, 0x000000, 1)
                 for (
                     let i = 0;
                     i !== world.narrowphase.contactEquations.length;
@@ -54,7 +52,7 @@ export const PhysicsContactRenderer = () => {
                 graphics.contacts.clear()
             }
         },
-        [pixiComponent, physicsWorldComponent, settingsComponent],
+        [pixi?.id, physicsWorld?.id, settings?.id],
         STAGES.RENDER_CONTACTS
     )
     return null

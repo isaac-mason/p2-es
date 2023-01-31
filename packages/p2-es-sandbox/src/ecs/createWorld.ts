@@ -5,7 +5,7 @@ import { PhysicsSpringComponent } from './components/PhysicsSpringComponent'
 import { PointerComponent } from './components/singletons/PointerComponent'
 import { PhysicsWorldComponent } from './components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from './components/singletons/PixiComponent'
-import { SettingsComponent } from './components/singletons/SettingsSingletonComponent'
+import { SettingsComponent } from './components/singletons/SettingsComponent'
 import { SpriteComponent } from './components/SpriteComponent'
 import { UpdateHandlerComponent } from './components/UpdateHandlerComponent'
 

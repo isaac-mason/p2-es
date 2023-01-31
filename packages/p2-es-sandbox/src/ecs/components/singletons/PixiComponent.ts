@@ -2,6 +2,7 @@ import { Component } from 'arancini'
 import { Application, Container, Graphics } from 'pixi.js'
 
 export type Pixi = {
+    domElement: HTMLElement
     canvasElement: HTMLCanvasElement
     application: Application
     stage: Container
@@ -16,7 +17,9 @@ export type Pixi = {
     onResize: () => void
 }
 
-export class PixiComponent extends Component {
+export class PixiComponent extends Component implements Pixi {
+    domElement!: HTMLElement
+
     canvasElement!: HTMLCanvasElement
 
     application!: Application
@@ -32,6 +35,7 @@ export class PixiComponent extends Component {
     onResize!: () => void
 
     construct(pixi: Pixi) {
+        this.domElement = pixi.domElement
         this.canvasElement = pixi.canvasElement
         this.application = pixi.application
         this.stage = pixi.stage

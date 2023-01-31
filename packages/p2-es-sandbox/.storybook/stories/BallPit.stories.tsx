@@ -88,7 +88,7 @@ export const BallPit = () => {
         return { world }
     }
 
-    return <App setup={fn} codeLink="" />
+    return <App setup={fn} title="Ball Pit" codeLink="" />
 }
 
 export default {

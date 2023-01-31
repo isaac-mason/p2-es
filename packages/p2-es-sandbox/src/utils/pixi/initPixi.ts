@@ -1,18 +1,21 @@
 import '@pixi/events'
 import { Application, Container, Graphics } from 'pixi.js'
 import { Pixi } from '../../ecs/components/singletons/PixiComponent'
-import { theme } from '../../theme/theme'
+import { canvasTheme } from '../../theme/canvasTheme'
 
 export const initPixi = (
     domElement: HTMLElement
 ): Pixi & { destroyPixi: () => void } => {
+    // set tabIndex to enable keyboard events
+    domElement.tabIndex = 0
+
     const canvasElement = document.createElement('canvas')
     canvasElement.style.width = '100%'
     canvasElement.style.height = '100%'
     domElement.appendChild(canvasElement)
 
     const application = new Application({
-        backgroundColor: theme.canvas.background,
+        backgroundColor: canvasTheme.background,
         antialias: true,
         width: 1280,
         height: 720,
@@ -55,7 +58,7 @@ export const initPixi = (
         application.renderer.resize(w, h)
 
         background.clear()
-        background.beginFill(theme.canvas.background)
+        background.beginFill(canvasTheme.background)
         background.drawRect(
             0,
             0,
@@ -75,6 +78,7 @@ export const initPixi = (
     }
 
     return {
+        domElement,
         application,
         stage,
         container,
