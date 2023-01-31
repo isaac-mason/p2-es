@@ -29,6 +29,7 @@ export const initPixi = (
     const container = new Container()
     container.scale.x = 200
     container.scale.y = -200 // Flip Y direction.
+    container.sortableChildren = true
 
     const background = new Graphics()
 
@@ -38,6 +39,11 @@ export const initPixi = (
         pick: new Graphics(),
         drawShape: new Graphics(),
     }
+
+    graphics.contacts.zIndex = 1
+    graphics.aabb.zIndex = 2
+    graphics.drawShape.zIndex = 3
+    graphics.pick.zIndex = 4
 
     stage.addChild(background)
     stage.addChild(container)
