@@ -18,60 +18,67 @@
                 r = 0.1 // Circle radius
 
             // Create demo application
-            new Sandbox(({ frame }) => {
-                // Create a world with island splitting enabled.
-                // The island splitting will cut the scene into independent islands and treat them as separate simulations. This can improve performance.
-                const world = new p2.World({
-                    gravity: [0, -10],
-                    islandSplit: true,
-                })
+            new Sandbox(
+                ({ frame }) => {
+                    // Create a world with island splitting enabled.
+                    // The island splitting will cut the scene into independent islands and treat them as separate simulations. This can improve performance.
+                    const world = new p2.World({
+                        gravity: [0, -10],
+                        islandSplit: true,
+                    })
 
-                world.solver.tolerance = 0.1
-                world.solver.iterations = N
+                    world.solver.tolerance = 0.1
+                    world.solver.iterations = N
 
-                // Create circle ropes
-                for (let j = 0; j < M; j++) {
-                    let lastBody
-                    for (let i = N; i >= 0; i--) {
-                        const x = (j + 0.5 - M / 2) * r * 8
-                        const y = (N / 2 - i) * r * 2.1
-                        const p = new p2.Body({
-                            mass: i == 0 ? 0 : 1,
-                            position: [x, y],
-                        })
-                        p.addShape(new p2.Circle({ radius: r }))
-                        world.addBody(p)
-                        if (lastBody) {
-                            // Connect the current body to the previous one
-                            const dist = Math.abs(p.position[1] - lastBody.position[1])
-                            const constraint = new p2.DistanceConstraint(p, lastBody, {
-                                distance: dist,
+                    // Create circle ropes
+                    for (let j = 0; j < M; j++) {
+                        let lastBody
+                        for (let i = N; i >= 0; i--) {
+                            const x = (j + 0.5 - M / 2) * r * 8
+                            const y = (N / 2 - i) * r * 2.1
+                            const p = new p2.Body({
+                                mass: i == 0 ? 0 : 1,
+                                position: [x, y],
                             })
-                            world.addConstraint(constraint)
-                        } else {
-                            p.velocity[0] = 1 * i
+                            p.addShape(new p2.Circle({ radius: r }))
+                            world.addBody(p)
+                            if (lastBody) {
+                                // Connect the current body to the previous one
+                                const dist = Math.abs(p.position[1] - lastBody.position[1])
+                                const constraint = new p2.DistanceConstraint(p, lastBody, {
+                                    distance: dist,
+                                })
+                                world.addConstraint(constraint)
+                            } else {
+                                p.velocity[0] = 1 * i
+                            }
+                            lastBody = p
                         }
-                        lastBody = p
+                        lastBody = null
                     }
-                    lastBody = null
+
+                    // Print the number of independent islands to console repeatedly.
+                    // This will output 10 if the ropes don't touch.
+                    const interval = setInterval(function () {
+                        var numIslands = world.unionFind.count
+                        console.log('Number of islands:', numIslands)
+                    }, 1000)
+
+                    frame(0, 0, 8, 8)
+
+                    return {
+                        world,
+                        teardown: () => {
+                            clearInterval(interval)
+                        },
+                    }
+                },
+                document.getElementById('demo'),
+                {
+                    title: 'Island Solver',
+                    codeLink: 'https://github.com/pmndrs/p2-es/blob/master/apps/p2-es-demos/src/islandSolver.html',
                 }
-
-                // Print the number of independent islands to console repeatedly.
-                // This will output 10 if the ropes don't touch.
-                const interval = setInterval(function () {
-                    var numIslands = world.unionFind.count
-                    console.log('Number of islands:', numIslands)
-                }, 1000)
-
-                frame(0, 0, 8, 8)
-
-                return {
-                    world,
-                    teardown: () => {
-                        clearInterval(interval)
-                    },
-                }
-            }, document.getElementById('demo')).init()
+            ).mount()
         </script>
     </body>
 </html>

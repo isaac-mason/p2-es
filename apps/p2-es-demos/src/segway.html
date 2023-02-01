@@ -36,91 +36,97 @@
             positionController.gainI = 0
             positionController.gainD = 1.5
 
-            new Sandbox(({ frame }) => {
-                const world = new p2.World({
-                    gravity: [0, -30],
-                })
+            new Sandbox(
+                ({ frame }) => {
+                    const world = new p2.World({
+                        gravity: [0, -30],
+                    })
 
-                world.defaultContactMaterial.friction = 10
+                    world.defaultContactMaterial.friction = 10
 
-                const pendulumBody = new p2.Body({
-                    mass: 1,
-                    position: [0, 2 + 0.5 * PENDULUM_LENGTH],
-                })
-                pendulumBody.addShape(new p2.Box({ width: 1, height: PENDULUM_LENGTH }))
-                world.addBody(pendulumBody)
+                    const pendulumBody = new p2.Body({
+                        mass: 1,
+                        position: [0, 2 + 0.5 * PENDULUM_LENGTH],
+                    })
+                    pendulumBody.addShape(new p2.Box({ width: 1, height: PENDULUM_LENGTH }))
+                    world.addBody(pendulumBody)
 
-                const wheelBody = new p2.Body({
-                    mass: 1,
-                    position: [0, 1],
-                })
-                wheelBody.addShape(new p2.Circle({ radius: 0.6 }))
-                world.addBody(wheelBody)
+                    const wheelBody = new p2.Body({
+                        mass: 1,
+                        position: [0, 1],
+                    })
+                    wheelBody.addShape(new p2.Circle({ radius: 0.6 }))
+                    world.addBody(wheelBody)
 
-                const wheelJoint = new p2.RevoluteConstraint(wheelBody, pendulumBody, {
-                    localPivotA: [0, 0],
-                    localPivotB: [0, -0.5 * PENDULUM_LENGTH],
-                    collideConnected: false,
-                })
-                world.addConstraint(wheelJoint)
-                wheelJoint.motorEnabled = true
-                const m = 40
-                wheelJoint.motorEquation.maxForce = m
-                wheelJoint.motorEquation.minForce = -m
+                    const wheelJoint = new p2.RevoluteConstraint(wheelBody, pendulumBody, {
+                        localPivotA: [0, 0],
+                        localPivotB: [0, -0.5 * PENDULUM_LENGTH],
+                        collideConnected: false,
+                    })
+                    world.addConstraint(wheelJoint)
+                    wheelJoint.motorEnabled = true
+                    const m = 40
+                    wheelJoint.motorEquation.maxForce = m
+                    wheelJoint.motorEquation.minForce = -m
 
-                // Create ground
-                const groundShape = new p2.Plane()
-                const groundBody = new p2.Body({
-                    position: [0, 0],
-                })
-                groundBody.addShape(groundShape)
-                world.addBody(groundBody)
+                    // Create ground
+                    const groundShape = new p2.Plane()
+                    const groundBody = new p2.Body({
+                        position: [0, 0],
+                    })
+                    groundBody.addShape(groundShape)
+                    world.addBody(groundBody)
 
-                world.on('postStep', function () {
-                    let targetAngle = 0
-                    if (true) {
-                        const alpha = 0.4
-                        posAvg = (1 - alpha) * posAvg + alpha * pendulumBody.position[0]
+                    world.on('postStep', function () {
+                        let targetAngle = 0
+                        if (true) {
+                            const alpha = 0.4
+                            posAvg = (1 - alpha) * posAvg + alpha * pendulumBody.position[0]
 
-                        positionController.currentError = targetPosition - posAvg
-                        positionController.step(world.lastTimeStep)
-                        let targetLinAccel = positionController.output
-                        targetLinAccel = clamp(targetLinAccel, -10.0, 10.0)
+                            positionController.currentError = targetPosition - posAvg
+                            positionController.step(world.lastTimeStep)
+                            let targetLinAccel = positionController.output
+                            targetLinAccel = clamp(targetLinAccel, -10.0, 10.0)
 
-                        targetAngle = targetLinAccel / world.gravity[1]
-                        targetAngle = clamp(targetAngle, -15 * DEGTORAD, 15 * DEGTORAD)
+                            targetAngle = targetLinAccel / world.gravity[1]
+                            targetAngle = clamp(targetAngle, -15 * DEGTORAD, 15 * DEGTORAD)
+                        }
+
+                        let currentAngle = pendulumBody.angle
+                        currentAngle = normalizeAngle(currentAngle)
+                        angleController.currentError = targetAngle - currentAngle
+                        angleController.step(world.lastTimeStep)
+                        let targetSpeed = angleController.output
+
+                        // give up if speed required is really high
+                        if (Math.abs(targetSpeed) > 1000) targetSpeed = 0
+
+                        // this is the only output
+                        const targetAngularVelocity = -targetSpeed / (2 * Math.PI * wheelBody.shapes[0].radius) // wheel circumference = 2*pi*r
+                        wheelJoint.motorSpeed = targetAngularVelocity
+                    })
+
+                    frame(3, 5, 16, 16)
+
+                    return {
+                        world,
+                        teardown: () => {
+                            clearInterval(targetPositionInterval)
+                        },
                     }
-
-                    let currentAngle = pendulumBody.angle
-                    currentAngle = normalizeAngle(currentAngle)
-                    angleController.currentError = targetAngle - currentAngle
-                    angleController.step(world.lastTimeStep)
-                    let targetSpeed = angleController.output
-
-                    // give up if speed required is really high
-                    if (Math.abs(targetSpeed) > 1000) targetSpeed = 0
-
-                    // this is the only output
-                    const targetAngularVelocity = -targetSpeed / (2 * Math.PI * wheelBody.shapes[0].radius) // wheel circumference = 2*pi*r
-                    wheelJoint.motorSpeed = targetAngularVelocity
-                })
-
-                frame(3, 5, 16, 16)
-
-                return {
-                    world,
-                    teardown: () => {
-                        clearInterval(targetPositionInterval)
-                    },
+                },
+                document.getElementById('demo'),
+                {
+                    title: 'Segway',
+                    codeLink: 'https://github.com/pmndrs/p2-es/blob/master/apps/p2-es-demos/src/segway.html',
                 }
-            }, document.getElementById('demo'))
+            ).mount()
 
             /**
              * Simple PID controller for single float variable
              *
              * @see http://en.wikipedia.org/wiki/PID_controller#Pseudocode
              */
-
             function PIDController() {
                 this.gainP = 1
                 this.gainI = 1

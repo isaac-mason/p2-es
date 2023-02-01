@@ -17,64 +17,71 @@
             let removeBody
 
             // Create demo application
-            new Sandbox(() => {
-                const world = new p2.World({
-                    gravity: [0, -10],
-                })
+            new Sandbox(
+                () => {
+                    const world = new p2.World({
+                        gravity: [0, -10],
+                    })
 
-                // Create circle
-                const shape = new p2.Circle({ radius: 0.4 })
-                const body = new p2.Body({
-                    mass: 1,
-                    position: [0, 3],
-                })
-                body.addShape(shape)
+                    // Create circle
+                    const shape = new p2.Circle({ radius: 0.4 })
+                    const body = new p2.Body({
+                        mass: 1,
+                        position: [0, 3],
+                    })
+                    body.addShape(shape)
 
-                // Create ground.
-                const planeShape = new p2.Plane()
-                const plane = new p2.Body({
-                    position: [0, -1],
-                })
-                plane.addShape(planeShape)
-                world.addBody(plane)
+                    // Create ground.
+                    const planeShape = new p2.Plane()
+                    const plane = new p2.Body({
+                        position: [0, -1],
+                    })
+                    plane.addShape(planeShape)
+                    world.addBody(plane)
 
-                // The beginContact event is fired whenever two shapes starts overlapping, including sensors.
-                world.on('beginContact', function (event) {
-                    // We cannot remove the body here since the world is still stepping.
-                    // Instead, schedule the body to be removed after the step is done.
-                    removeBody = body
-                })
+                    // The beginContact event is fired whenever two shapes starts overlapping, including sensors.
+                    world.on('beginContact', function (event) {
+                        // We cannot remove the body here since the world is still stepping.
+                        // Instead, schedule the body to be removed after the step is done.
+                        removeBody = body
+                    })
 
-                // The postStep event is fired after a physics tick.
-                // Removal of bodies, shapes and constraints is safe here.
-                world.on('postStep', function (event) {
-                    if (removeBody) {
-                        // Remove the body from the world.
-                        world.removeBody(removeBody)
-                        removeBody = null
+                    // The postStep event is fired after a physics tick.
+                    // Removal of bodies, shapes and constraints is safe here.
+                    world.on('postStep', function (event) {
+                        if (removeBody) {
+                            // Remove the body from the world.
+                            world.removeBody(removeBody)
+                            removeBody = null
+                        }
+                    })
+
+                    function spawnBody() {
+                        if (!body.world) {
+                            body.position[0] = 0
+                            body.position[1] = 2
+                            body.velocity[0] = body.velocity[1] = body.angularVelocity = 0
+                            world.addBody(body)
+                        }
                     }
-                })
 
-                function spawnBody() {
-                    if (!body.world) {
-                        body.position[0] = 0
-                        body.position[1] = 2
-                        body.velocity[0] = body.velocity[1] = body.angularVelocity = 0
-                        world.addBody(body)
+                    spawnBody()
+
+                    interval = setInterval(spawnBody, 2000)
+
+                    return {
+                        world,
+                        teardown: () => {
+                            clearInterval(interval)
+                        },
                     }
+                },
+                document.getElementById('demo'),
+                {
+                    title: 'Remove Sensor',
+                    codeLink: 'https://github.com/pmndrs/p2-es/blob/master/apps/p2-es-demos/src/removeSensor.html',
                 }
-
-                spawnBody()
-
-                interval = setInterval(spawnBody, 2000)
-
-                return {
-                    world,
-                    teardown: () => {
-                        clearInterval(interval)
-                    },
-                }
-            }, document.getElementById('demo')).init()
+            ).mount()
         </script>
     </body>
 </html>

@@ -52,7 +52,7 @@ export const CreateSandboxExample = () => {
             return { world }
         }, document.getElementById('demo')!)
 
-        sandbox.init()
+        sandbox.mount()
 
         return () => {
             sandbox.destroy()

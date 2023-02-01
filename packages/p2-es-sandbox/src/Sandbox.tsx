@@ -5,6 +5,7 @@ import { SandboxFunction, Scenes } from './types'
 
 export type SandboxProps = {
     title?: string
+    codeLink?: string
 }
 
 export class Sandbox {
@@ -17,15 +18,23 @@ export class Sandbox {
         private config?: SandboxProps
     ) {}
 
-    init(): this {
-        this.root = ReactDOM.createRoot(this.domElement)
+    mount(): this {
+        if (!this.root) {
+            this.root = ReactDOM.createRoot(this.domElement)
 
-        this.root.render(<App setup={this.setup} title={this.config?.title} />)
+            this.root.render(
+                <App
+                    setup={this.setup}
+                    title={this.config?.title}
+                    codeLink={this.config?.codeLink}
+                />
+            )
+        }
 
         return this
     }
 
-    destroy() {
+    unmount(): void {
         if (this.root) {
             this.root.unmount()
             this.root = undefined
