@@ -56,7 +56,7 @@ export const sandboxFunctionEvaluator = ({
     // default view
     frame(0, 0, 8, 6)
 
-    const { world, tools, teardown } = sandboxFunction(sandboxContext)
+    const { world, tools, settings, teardown } = sandboxFunction(sandboxContext)
 
     const destroySandbox = () => {
         if (teardown) {
@@ -67,6 +67,7 @@ export const sandboxFunctionEvaluator = ({
     return {
         world,
         tools,
+        settings,
         updateHandlers,
         sandboxContext,
         destroySandbox,

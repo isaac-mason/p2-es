@@ -2,14 +2,16 @@ import { Entity } from 'arancini'
 import * as p2 from 'p2-es'
 import { Body, Spring } from 'p2-es'
 import React, { useEffect, useRef, useState } from 'react'
-import { up } from 'styled-breakpoints'
-import styled from 'styled-components'
 import { PhysicsBodyComponent } from '../ecs/components/PhysicsBodyComponent'
 import { PhysicsSpringComponent } from '../ecs/components/PhysicsSpringComponent'
 import { PhysicsWorldComponent } from '../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../ecs/components/singletons/PixiComponent'
 import { PointerComponent } from '../ecs/components/singletons/PointerComponent'
-import { SettingsComponent } from '../ecs/components/singletons/SettingsComponent'
+import {
+    defaultSandboxSettings,
+    SandboxSettings,
+    SettingsComponent,
+} from '../ecs/components/singletons/SettingsComponent'
 import { createWorld } from '../ecs/createWorld'
 import { WorldContextProvider } from '../ecs/worldContext'
 import { useConst } from '../hooks/useConst'
@@ -17,10 +19,22 @@ import { useECS } from '../hooks/useECS'
 import { useFrame } from '../hooks/useFrame'
 import { useSingletonComponent } from '../hooks/useSingletonComponent'
 import { STAGES } from '../stages'
-import { interfaceTheme } from '../theme/interfaceTheme'
 import { SandboxFunction, Scenes, Tool, Tools } from '../types'
 import { initPixi } from '../utils/pixi/initPixi'
 import { sandboxFunctionEvaluator } from '../utils/sandboxFunctionEvaluator'
+import {
+    CanvasWrapper,
+    ControlsWrapper,
+    ExternalLink,
+    Header,
+    HeaderButton,
+    HeaderButtons,
+    HeaderMiddle,
+    HeaderSandboxTitle,
+    InspectorWrapper,
+    Main,
+    Wrapper,
+} from './AppStyledComponents'
 import { Controls } from './controls/Controls'
 import { Inspector } from './inspector/Inspector'
 import { Loop } from './Loop'
@@ -59,179 +73,6 @@ body.addShape(new p2.Circle({
 world.addBody(body);
 `
 
-const Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    width: 100%;
-
-    ${up('md')} {
-        height: 100%;
-    }
-`
-
-const HEADER_HEIGHT = '50px'
-
-const Header = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-
-    width: calc(100% - 30px);
-    height: ${HEADER_HEIGHT};
-    padding: 0 15px;
-    border-bottom: 1px solid ${interfaceTheme.color.backgroundLight};
-    background-color: ${interfaceTheme.color.background};
-    color: ${interfaceTheme.color.highlight1};
-
-    font-size: 0.9rem;
-    font-family: 'Roboto Mono', monospace;
-
-    a {
-        color: ${interfaceTheme.color.highlight1};
-        text-decoration: none;
-    }
-
-    overflow-x: auto;
-
-    ${up('md')} {
-        overflow-x: hidden;
-    }
-`
-
-const ExternalLink = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.2em;
-
-    svg {
-        width: 15px;
-        stroke: ${interfaceTheme.color.highlight1};
-    }
-`
-
-const HeaderButton = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 30px;
-
-    text-align: center;
-
-    background-color: ${interfaceTheme.color.background};
-    &:hover {
-        background-color: ${interfaceTheme.color.backgroundLight};
-    }
-
-    * {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: ${interfaceTheme.color.highlight1};
-        font-weight: 400;
-    }
-
-    button {
-        background: none;
-        border: none;
-        padding: 0;
-        width: 35px;
-    }
-
-    svg {
-        width: 20px;
-        height: 20px;
-        stroke: #efefef;
-    }
-`
-
-const HeaderButtons = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-`
-
-const HeaderMiddle = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-evenly;
-    gap: 2em;
-`
-
-const HeaderSandboxTitle = styled.div`
-    display: none;
-
-    ${up('md')} {
-        display: block;
-    }
-`
-
-const Main = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-
-    ${up('md')} {
-        height: 100%;
-        flex-direction: row;
-        overflow: hidden;
-    }
-`
-
-const CanvasWrapper = styled.div<{ controlsHidden: boolean }>`
-    flex: 1;
-    width: 100%;
-
-    min-height: ${({ controlsHidden }) =>
-        controlsHidden ? `calc(100vh - ${HEADER_HEIGHT})` : '70vh'};
-    max-height: ${({ controlsHidden }) =>
-        controlsHidden ? `calc(100vh - ${HEADER_HEIGHT})` : '70vh'};
-
-    height: 100%;
-
-    ${up('md')} {
-        min-height: unset;
-        max-height: unset;
-        height: 100%;
-    }
-`
-
-const ControlsWrapper = styled.div<{ hidden: boolean }>`
-    flex: 1;
-    width: 100%;
-    min-height: 300px;
-    background-color: ${interfaceTheme.color.background};
-
-    ${up('md')} {
-        flex: none;
-        width: 320px;
-        height: 100%;
-        min-height: unset;
-        overflow-y: scroll;
-    }
-`
-
-const InspectorWrapper = styled.div`
-    position: absolute;
-    width: 300px;
-    top: 4em;
-    left: 1em;
-
-    ${up('md')} {
-        width: 320px;
-    }
-`
-
 export type AppProps = {
     setup: SandboxFunction | Scenes
 
@@ -241,22 +82,40 @@ export type AppProps = {
 }
 
 const AppInner = ({ title, setup, codeLink }: AppProps) => {
-    const [version, setVersion] = useState(0)
-    const reset = () => setVersion((v) => v + 1)
-
     const ecs = useECS()
 
     const canvasWrapperElement = useRef<HTMLDivElement>(null)
 
+    /* state and function for resetting the current scene */
+    const [sceneVersion, setSceneVersion] = useState(0)
+    const resetScene = () => setSceneVersion((v) => v + 1)
+
+    /* scene state */
     const scenes = typeof setup === 'function' ? { default: { setup } } : setup
     const sceneNames = Object.keys(scenes)
     const [scene, setScene] = useState(sceneNames[0])
+    const previousScene = useRef<string | null>(null)
 
+    /* current tool */
     const [tool, setTool] = useState<Tool>(Tools.PICK_PAN)
 
-    const [controlsHidden, setControlsHidden] = useState(false)
-    const [inspectorHidden, setInspectorHidden] = useState(true)
+    /* controls and inspector visibility */
+    const [searchParams] = useState(
+        () => new URLSearchParams(window.location.search)
+    )
+    const [controlsHidden, setControlsHidden] = useState(() => {
+        return searchParams.get('controls') === 'false'
+    })
+    const [inspectorHidden, setInspectorHidden] = useState(() => {
+        return searchParams.get('inspector') !== 'true'
+    })
 
+    /* sandbox settings */
+    const [sandboxSettings, setSandboxSettings] = useState<SandboxSettings>(
+        defaultSandboxSettings
+    )
+
+    /* user-provided handlers for updating the sandbox */
     const [sandboxUpdateHandlers, setSandboxUpdateHandlers] = useState<Set<
         (delta: number) => void
     > | null>()
@@ -265,13 +124,12 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
     const springEntities: Map<Spring, Entity> = useConst(() => new Map())
 
     const pixi = useSingletonComponent(PixiComponent)
-    const settings = useSingletonComponent(SettingsComponent)
     const physicsWorld = useSingletonComponent(PhysicsWorldComponent)
     const pointer = useSingletonComponent(PointerComponent)
+    const settings = useSingletonComponent(SettingsComponent)
 
     useEffect(() => {
-        if (!pixi) return
-        pixi.onResize()
+        pixi?.onResize()
     }, [pixi?.id, controlsHidden])
 
     /* create the pixi application */
@@ -294,15 +152,30 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
 
     /* create the current scene */
     useEffect(() => {
-        if (!pixi || !settings || !pointer) return
+        if (!pixi || !pointer) return
 
         // evaluate the current scene's sandbox function
-        const { world, tools, updateHandlers, sandboxContext, destroySandbox } =
-            sandboxFunctionEvaluator({
-                pixi,
-                pointer,
-                sandboxFunction: scenes[scene].setup,
-            })
+        const {
+            world,
+            tools,
+            updateHandlers,
+            sandboxContext,
+            settings: newSandboxSettings,
+            destroySandbox,
+        } = sandboxFunctionEvaluator({
+            pixi,
+            pointer,
+            sandboxFunction: scenes[scene].setup,
+        })
+
+        // set sandbox settings if the scene has changed
+        if (scene !== previousScene.current) {
+            const s = {
+                ...defaultSandboxSettings,
+                ...newSandboxSettings,
+            }
+            setSandboxSettings(s)
+        }
 
         // set tool config
         if (tools?.default) {
@@ -373,6 +246,8 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
         globalWindow.sandbox = sandboxContext
 
         return () => {
+            previousScene.current = scene
+
             setSandboxUpdateHandlers(null)
 
             world.off('addBody', addBodyHandler)
@@ -392,7 +267,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                 entity.destroy()
             })
         }
-    }, [pixi?.id, pointer?.id, scene, version])
+    }, [pixi?.id, pointer?.id, scene, sceneVersion])
 
     /* step the physics world */
     useFrame(
@@ -403,7 +278,9 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
             const { world } = physicsWorld
 
             if (paused) return
-            world.step(timeStep, delta, maxSubSteps)
+
+            const clampedDelta = Math.min(delta, 1)
+            world.step(timeStep, clampedDelta, maxSubSteps)
         },
         [settings?.id, physicsWorld?.id],
         STAGES.PHYSICS
@@ -443,7 +320,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                         <HeaderButtons>
                             {/* Reset */}
                             <HeaderButton title="Reset">
-                                <button onClick={() => reset()}>
+                                <button onClick={() => resetScene()}>
                                     <RefreshSvg />
                                 </button>
                             </HeaderButton>
@@ -498,14 +375,16 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                     />
 
                     {/* Controls */}
-                    <ControlsWrapper hidden={controlsHidden}>
+                    <ControlsWrapper hide={controlsHidden}>
                         <Controls
+                            hidden={controlsHidden}
                             tool={tool}
                             setTool={(t) => setTool(t)}
                             scene={scene}
                             scenes={sceneNames}
                             setScene={(sceneName) => setScene(sceneName)}
-                            reset={reset}
+                            defaultSettings={sandboxSettings}
+                            reset={resetScene}
                         />
                     </ControlsWrapper>
                 </Main>
@@ -516,7 +395,7 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
                 <Inspector hidden={inspectorHidden} />
             </InspectorWrapper>
 
-            {/* Interaction */}
+            {/* Tools */}
             <PointerObserver />
             {tool === Tools.PICK_PAN && <PickPanTool />}
             {tool === Tools.POLYGON && <PolygonTool />}

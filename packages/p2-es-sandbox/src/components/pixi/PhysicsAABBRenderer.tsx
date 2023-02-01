@@ -25,7 +25,11 @@ export const PhysicsAABBRenderer = () => {
                 container.addChild(graphics.aabb)
 
                 const g = graphics.aabb
-                g.lineStyle(canvasTheme.lineWidth, 0x000000, 1)
+                g.lineStyle(
+                    canvasTheme.lineWidth,
+                    canvasTheme.aabbs.lineColor,
+                    1
+                )
 
                 for (let i = 0; i !== world.bodies.length; i++) {
                     const aabb = world.bodies[i].getAABB()

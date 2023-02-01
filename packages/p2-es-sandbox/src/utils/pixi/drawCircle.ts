@@ -33,11 +33,17 @@ export const drawCircle = ({
     y *= RES_SCALAR
     radius *= RES_SCALAR
 
-    fillColor = typeof fillColor === 'number' ? fillColor : 0xffffff
     graphics.lineStyle(lineWidth, lineColor, 1)
-    graphics.beginFill(fillColor, isSleeping ? sleepOpacity : 1.0)
+
+    if (fillColor) {
+        graphics.beginFill(fillColor, isSleeping ? sleepOpacity : 1.0)
+    }
+
     graphics.drawCircle(x, y, radius)
-    graphics.endFill()
+
+    if (fillColor) {
+        graphics.endFill()
+    }
 
     // line from center to edge
     graphics.moveTo(x, y)

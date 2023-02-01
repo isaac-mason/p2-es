@@ -1,7 +1,20 @@
 import { Component } from 'arancini'
 
-export interface Settings {
-    timeStep: number
+export const defaultSandboxSettings: SandboxSettings = {
+    physicsStepsPerSecond: 60,
+    maxSubSteps: 3,
+    paused: false,
+    renderInterpolatedPositions: true,
+    bodyIds: false,
+    bodyIslandColors: false,
+    bodySleepOpacity: false,
+    drawContacts: false,
+    drawAABBs: false,
+    debugPolygons: false,
+}
+
+export interface SandboxSettings {
+    physicsStepsPerSecond: number
     maxSubSteps: number
     paused: boolean
 
@@ -15,7 +28,13 @@ export interface Settings {
     renderInterpolatedPositions: boolean
 }
 
+export interface Settings extends SandboxSettings {
+    timeStep: number
+}
+
 export class SettingsComponent extends Component implements Settings {
+    physicsStepsPerSecond!: number
+
     timeStep!: number
 
     maxSubSteps!: number
@@ -37,6 +56,7 @@ export class SettingsComponent extends Component implements Settings {
     drawAABBs!: boolean
 
     construct(settings: Settings) {
+        this.physicsStepsPerSecond = settings.physicsStepsPerSecond
         this.timeStep = settings.timeStep
         this.maxSubSteps = settings.maxSubSteps
         this.paused = settings.paused

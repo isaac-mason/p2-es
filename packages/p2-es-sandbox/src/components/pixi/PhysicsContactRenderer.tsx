@@ -26,7 +26,11 @@ export const PhysicsContactRenderer = () => {
                 container.addChild(graphics.contacts)
 
                 const g = graphics.contacts
-                g.lineStyle(canvasTheme.lineWidth, 0x000000, 1)
+                g.lineStyle(
+                    canvasTheme.lineWidth,
+                    canvasTheme.contacts.lineColor,
+                    1
+                )
                 for (
                     let i = 0;
                     i !== world.narrowphase.contactEquations.length;

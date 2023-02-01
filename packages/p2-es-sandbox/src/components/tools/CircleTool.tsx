@@ -43,7 +43,7 @@ export const CircleTool = ({
                 y: circleCenter.current[1],
                 angle: 0,
                 radius: circleRadius.current,
-                lineColor: canvasTheme.body.lineColor,
+                lineColor: canvasTheme.bodies.drawing.lineColor,
                 lineWidth: canvasTheme.lineWidth,
             })
         }

@@ -7,6 +7,7 @@ import { useECS } from '../../hooks/useECS'
 import { useFrame } from '../../hooks/useFrame'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { STAGES } from '../../stages'
+import { canvasTheme } from '../../theme/canvasTheme'
 import { drawRenderable } from '../../utils/pixi/drawRenderable'
 
 export const PhysicsSpringRenderer = () => {
@@ -37,8 +38,8 @@ export const PhysicsSpringRenderer = () => {
                     drawRenderable({
                         sprite,
                         renderable: spring,
-                        lineColor: 0x000000,
-                        lineWidth: 0.01,
+                        lineColor: canvasTheme.springs.lineColor,
+                        lineWidth: canvasTheme.lineWidth,
                     })
                 }
 

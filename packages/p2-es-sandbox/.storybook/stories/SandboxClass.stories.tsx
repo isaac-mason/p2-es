@@ -55,7 +55,7 @@ export const CreateSandboxExample = () => {
         sandbox.mount()
 
         return () => {
-            sandbox.destroy()
+            sandbox.unmount()
         }
     })
 

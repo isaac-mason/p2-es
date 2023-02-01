@@ -39,7 +39,7 @@ export const PolygonTool = ({
             drawPath({
                 graphics,
                 path: polygonPoints.current.map((point) => [...point]),
-                lineColor: canvasTheme.body.lineColor,
+                lineColor: canvasTheme.bodies.drawing.lineColor,
                 lineWidth: canvasTheme.lineWidth,
             })
         }

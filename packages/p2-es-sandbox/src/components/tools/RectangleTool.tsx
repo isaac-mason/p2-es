@@ -50,7 +50,7 @@ export const RectangleTool = ({
                 w: width,
                 h: height,
                 angle: 0,
-                lineColor: canvasTheme.body.lineColor,
+                lineColor: canvasTheme.bodies.drawing.lineColor,
                 lineWidth: canvasTheme.lineWidth,
             })
         }

@@ -30,7 +30,7 @@ export const PhysicsBodyRenderer = () => {
 
     const getIslandColor = useCallback((body: Body) => {
         if (body.islandId === -1) {
-            return canvasTheme.body.static.fillColor // Gray for static objects
+            return canvasTheme.bodies.static.fillColor // Gray for static objects
         }
 
         let color = islandIdToColor[body.islandId]
@@ -45,7 +45,7 @@ export const PhysicsBodyRenderer = () => {
 
     const getBodyColor = useCallback((body: Body) => {
         if (body.type === Body.STATIC) {
-            return canvasTheme.body.static.fillColor // Gray for static objects
+            return canvasTheme.bodies.static.fillColor // Gray for static objects
         }
 
         let color = bodyIdToColor[body.id]
@@ -133,11 +133,12 @@ export const PhysicsBodyRenderer = () => {
                         sprite,
                         fillColor: color,
                         lineColor:
-                            sprite.drawnLineColor ?? canvasTheme.body.lineColor,
+                            sprite.drawnLineColor ??
+                            canvasTheme.bodies.lineColor,
                         debugPolygons,
                         lineWidth: canvasTheme.lineWidth,
                         sleepOpacity: bodySleepOpacity
-                            ? canvasTheme.body.sleepOpacity
+                            ? canvasTheme.bodies.sleeping.opacity
                             : 1,
                     })
                 }

@@ -1,11 +1,4 @@
-import {
-    button,
-    LevaPanel,
-    useControls,
-    useCreateStore,
-    useStoreContext,
-} from 'leva'
-import { ButtonInput } from 'leva/plugin'
+import { button, LevaPanel, useControls, useStoreContext } from 'leva'
 import React, { useEffect, useMemo } from 'react'
 import { PhysicsWorldComponent } from '../../ecs/components/singletons/PhysicsWorldComponent'
 import { PixiComponent } from '../../ecs/components/singletons/PixiComponent'
@@ -13,63 +6,12 @@ import {
     Settings,
     SettingsComponent,
 } from '../../ecs/components/singletons/SettingsComponent'
+import { useButtonGroupControls } from '../../hooks/useButtonGroupControls'
 import { useECS } from '../../hooks/useECS'
 import { useSingletonComponent } from '../../hooks/useSingletonComponent'
 import { levaTheme } from '../../theme/levaTheme'
 import { Tools } from '../../types'
 import { ControlsProps } from './Controls'
-
-const defaultSettings: Omit<Settings, 'timeStep'> & {
-    physicsStepsPerSecond: number
-} = {
-    physicsStepsPerSecond: 60,
-    maxSubSteps: 3,
-    paused: false,
-    renderInterpolatedPositions: true,
-    bodyIds: false,
-    bodyIslandColors: true,
-    bodySleepOpacity: true,
-    drawContacts: false,
-    drawAABBs: false,
-    debugPolygons: false,
-}
-
-const useButtonGroupControls = (
-    name: string,
-    {
-        options,
-        current,
-        onChange,
-        hidden,
-        store,
-    }: {
-        options: { name: string; value: string }[]
-        current: string
-        onChange: (value: string) => void
-        hidden?: boolean
-        store: ReturnType<typeof useCreateStore>
-    }
-) => {
-    return useControls(
-        name,
-        () =>
-            hidden
-                ? {}
-                : options.reduce<Record<string, ButtonInput>>((tools, t) => {
-                      tools[t.name] = button(
-                          () => {
-                              onChange(t.value)
-                          },
-                          {
-                              disabled: t.value === current,
-                          }
-                      )
-                      return tools
-                  }, {}),
-        { store },
-        [current, options, hidden, store]
-    )
-}
 
 export const ControlsInner = ({
     scene,
@@ -77,7 +19,9 @@ export const ControlsInner = ({
     setScene,
     tool,
     setTool,
+    defaultSettings,
     reset,
+    hidden,
 }: ControlsProps) => {
     const store = useStoreContext()
 
@@ -257,9 +201,28 @@ export const ControlsInner = ({
         }
     }, [physicsWorld?.id, pixi?.id, paused, drawContacts, drawAABBs, reset])
 
+    useEffect(() => {
+        setPhysics({
+            physicsStepsPerSecond: defaultSettings.physicsStepsPerSecond,
+            maxSubSteps: defaultSettings.maxSubSteps,
+            paused: defaultSettings.paused,
+        })
+        setRendering({
+            bodyIds: defaultSettings.bodyIds,
+            bodyIslandColors: defaultSettings.bodyIslandColors,
+            bodySleepOpacity: defaultSettings.bodySleepOpacity,
+            drawContacts: defaultSettings.drawContacts,
+            drawAABBs: defaultSettings.drawAABBs,
+            debugPolygons: defaultSettings.debugPolygons,
+            renderInterpolatedPositions:
+                defaultSettings.renderInterpolatedPositions,
+        })
+    }, [defaultSettings])
+
     const settingsComponentArgs: [Settings] = useMemo(
         () => [
             {
+                physicsStepsPerSecond,
                 timeStep,
                 maxSubSteps,
                 paused,
@@ -273,6 +236,7 @@ export const ControlsInner = ({
             },
         ],
         [
+            physicsStepsPerSecond,
             timeStep,
             maxSubSteps,
             paused,
@@ -294,6 +258,7 @@ export const ControlsInner = ({
                 flat
                 theme={levaTheme}
                 titleBar={false}
+                hidden={hidden}
             />
             <ecs.Entity>
                 <ecs.Component
