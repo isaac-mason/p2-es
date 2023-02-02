@@ -75,9 +75,7 @@ world.addBody(body);
 
 export type AppProps = {
     setup: SandboxFunction | Scenes
-
     title?: string
-
     codeLink?: string
 }
 

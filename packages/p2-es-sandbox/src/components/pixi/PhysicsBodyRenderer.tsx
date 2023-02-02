@@ -111,6 +111,9 @@ export const PhysicsBodyRenderer = () => {
                     graphics.rotation = body.angle
                 }
 
+                // update zIndex
+                graphics.zIndex = body.type === Body.STATIC ? 0 : 1
+
                 // update graphics if body changed sleepState or island
                 const isSleeping = body.sleepState === Body.SLEEPING
                 let color: number
