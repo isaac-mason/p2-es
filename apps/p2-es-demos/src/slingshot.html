@@ -19,7 +19,12 @@
                     const world = new p2.World({
                         gravity: [0, -5],
                     })
+                    world.defaultContactMaterial.friction = 0.5
 
+                    // Allow sleeping
+                    world.sleepMode = p2.World.BODY_SLEEPING
+
+                    // Define collision groups
                     const ATTACHED_ROCK_COLLISION_GROUP = Math.pow(2, 1)
                     const ROCK_COLLISION_GROUP = Math.pow(2, 2)
                     const POST_COLLISION_GROUP = Math.pow(2, 3)
@@ -40,8 +45,8 @@
                     // Add a pyramid of boxes
                     const pyramidBaseX = 5
                     const pyramidBaseY = 0.5
-                    const height = 8
-                    const baseWidth = 8
+                    const height = 12
+                    const baseWidth = 12
                     const boxWidth = 0.3
                     const boxHeight = 0.3
                     const boxMass = 1
@@ -69,7 +74,7 @@
                     // Create a static body for the slingshot base
                     const postBody = new p2.Body({
                         mass: 0,
-                        position: [0, 2],
+                        position: [0, 1],
                     })
                     const postShape = new p2.Box({
                         width: 0.5,
@@ -90,7 +95,7 @@
                         })
                         const circleBody = new p2.Body({
                             mass: 1,
-                            position: [0, 2],
+                            position: [0, 1],
                             angularDamping: 1,
                         })
                         circleBody.addShape(circleShape)
@@ -99,7 +104,7 @@
                         const spring = new p2.LinearSpring(postBody, circleBody, {
                             stiffness: 1000,
                             damping: 20,
-                            restLength: 0.1,
+                            restLength: 0
                         })
                         world.addSpring(spring)
 
@@ -141,7 +146,7 @@
                     })
 
                     // Framing
-                    frame(2, 0, 10, 10)
+                    frame(2.5, 1, 10, 10)
 
                     return { world }
                 },

@@ -105,7 +105,9 @@ export const PhysicsSpringRenderer = () => {
                     )
 
                     // And scale
-                    graphics.scale.x = vec2.length(distVec) / spring.restLength
+                    const clampedRestLength =
+                        spring.restLength > 0.1 ? spring.restLength : 0.1
+                    graphics.scale.x = vec2.length(distVec) / clampedRestLength
                 }
             }
         },
