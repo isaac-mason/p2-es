@@ -98,6 +98,7 @@
                             position: [0, 1],
                             angularDamping: 1,
                         })
+                        circleBody.userData = 'rock'
                         circleBody.addShape(circleShape)
                         world.addBody(circleBody)
 
@@ -142,6 +143,16 @@
                             circleBody = newCircleBody
                             circleShape = newCircleShape
                             spring = newSpring
+                        }
+                    })
+
+                    // Set the collision group and mask for new bodies
+                    world.on('addBody', (e) => {
+                        if (e.body.userData !== 'rock') {
+                            e.body.shapes.forEach((shape) => {
+                                shape.collisionGroup = ROCK_COLLISION_GROUP
+                                shape.collisionMask = ROCK_COLLISION_GROUP | OTHER_COLLISION_GROUP
+                            })
                         }
                     })
 

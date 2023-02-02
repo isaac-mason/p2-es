@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { UpdateHandlerComponent } from '../ecs/components/UpdateHandlerComponent'
 import { useECS } from '../hooks/useECS'
+import { usePageVisible } from '../hooks/usePageVisible'
 
 const loop = (fn: (delta: number) => void) => {
     let animationFrameRequest = 0
@@ -28,8 +29,11 @@ const loop = (fn: (delta: number) => void) => {
 
 export const Loop = () => {
     const ecs = useECS()
+    const pageVisible = usePageVisible()
 
     useEffect(() => {
+        if (!pageVisible) return
+
         const updateHandlersQuery = ecs.world.create.query([
             UpdateHandlerComponent,
         ])
@@ -55,7 +59,7 @@ export const Loop = () => {
             updateHandlersQuery.destroy()
             stop()
         }
-    }, [])
+    }, [pageVisible])
 
     return null
 }
