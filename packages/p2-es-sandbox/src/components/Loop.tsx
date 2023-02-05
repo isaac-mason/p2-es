@@ -50,7 +50,7 @@ export const Loop = () => {
         updateHandlersQuery.onEntityRemoved.add(() => sortHandlers())
 
         const stop = loop((delta) => {
-            sortedUpdateHandlers.forEach((handler) => handler.fn(delta))
+            sortedUpdateHandlers.forEach((handler) => handler.fn.current(delta))
         })
 
         return () => {

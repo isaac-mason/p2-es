@@ -46,6 +46,7 @@ export default defineConfig({
                 'friction.html',
                 'segway.html',
                 'sleep.html',
+                'slingshot.html',
                 'softWheel.html',
                 'springs.html',
                 'surfaceVelocity.html',

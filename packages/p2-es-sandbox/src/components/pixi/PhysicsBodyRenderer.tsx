@@ -73,83 +73,78 @@ export const PhysicsBodyRenderer = () => {
         })
     }, [settings?.bodySleepOpacity])
 
-    useFrame(
-        () => {
-            if (!settings || !pixi) {
-                return
+    useFrame(() => {
+        if (!settings || !pixi) {
+            return
+        }
+
+        const {
+            renderInterpolatedPositions: useInterpolatedPositions,
+            paused,
+            bodyIslandColors,
+            bodySleepOpacity,
+            debugPolygons,
+        } = settings
+        const { container } = pixi
+
+        for (const entity of uninitialised.entities) {
+            const { graphics } = entity.add(SpriteComponent)
+            container.addChild(graphics)
+        }
+
+        for (const entity of renderable.entities) {
+            const { body } = entity.get(PhysicsBodyComponent)
+            const sprite = entity.get(SpriteComponent)
+            const { graphics } = sprite
+
+            // update body transform
+            if (useInterpolatedPositions && !paused) {
+                const [x, y] = body.interpolatedPosition
+                graphics.position.x = x
+                graphics.position.y = y
+                graphics.rotation = body.interpolatedAngle
+            } else {
+                const [x, y] = body.position
+                graphics.position.x = x
+                graphics.position.y = y
+                graphics.rotation = body.angle
             }
 
-            const {
-                renderInterpolatedPositions: useInterpolatedPositions,
-                paused,
-                bodyIslandColors,
-                bodySleepOpacity,
-                debugPolygons,
-            } = settings
-            const { container } = pixi
+            // update zIndex
+            graphics.zIndex = body.type === Body.STATIC ? 0 : 1
 
-            for (const entity of uninitialised.entities) {
-                const { graphics } = entity.add(SpriteComponent)
-                container.addChild(graphics)
+            // update graphics if body changed sleepState or island
+            const isSleeping = body.sleepState === Body.SLEEPING
+            let color: number
+            if (bodyIslandColors) {
+                color = getIslandColor(body)
+            } else {
+                color = getBodyColor(body)
             }
 
-            for (const entity of renderable.entities) {
-                const { body } = entity.get(PhysicsBodyComponent)
-                const sprite = entity.get(SpriteComponent)
-                const { graphics } = sprite
+            if (
+                sprite.drawnSleeping !== isSleeping ||
+                sprite.drawnFillColor !== color ||
+                sprite.dirty
+            ) {
+                sprite.dirty = false
 
-                // update body transform
-                if (useInterpolatedPositions && !paused) {
-                    const [x, y] = body.interpolatedPosition
-                    graphics.position.x = x
-                    graphics.position.y = y
-                    graphics.rotation = body.interpolatedAngle
-                } else {
-                    const [x, y] = body.position
-                    graphics.position.x = x
-                    graphics.position.y = y
-                    graphics.rotation = body.angle
-                }
-
-                // update zIndex
-                graphics.zIndex = body.type === Body.STATIC ? 0 : 1
-
-                // update graphics if body changed sleepState or island
-                const isSleeping = body.sleepState === Body.SLEEPING
-                let color: number
-                if (bodyIslandColors) {
-                    color = getIslandColor(body)
-                } else {
-                    color = getBodyColor(body)
-                }
-
-                if (
-                    sprite.drawnSleeping !== isSleeping ||
-                    sprite.drawnFillColor !== color ||
-                    sprite.dirty
-                ) {
-                    sprite.dirty = false
-
-                    graphics.clear()
-                    drawRenderable({
-                        renderable: body,
-                        sprite,
-                        fillColor: color,
-                        lineColor:
-                            sprite.drawnLineColor ??
-                            canvasTheme.bodies.lineColor,
-                        debugPolygons,
-                        lineWidth: canvasTheme.lineWidth,
-                        sleepOpacity: bodySleepOpacity
-                            ? canvasTheme.bodies.sleeping.opacity
-                            : 1,
-                    })
-                }
+                graphics.clear()
+                drawRenderable({
+                    renderable: body,
+                    sprite,
+                    fillColor: color,
+                    lineColor:
+                        sprite.drawnLineColor ?? canvasTheme.bodies.lineColor,
+                    debugPolygons,
+                    lineWidth: canvasTheme.lineWidth,
+                    sleepOpacity: bodySleepOpacity
+                        ? canvasTheme.bodies.sleeping.opacity
+                        : 1,
+                })
             }
-        },
-        [pixi?.id, settings?.id],
-        STAGES.RENDER_BODIES
-    )
+        }
+    }, STAGES.RENDER_BODIES)
 
     return null
 }

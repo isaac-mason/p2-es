@@ -268,32 +268,24 @@ const AppInner = ({ title, setup, codeLink }: AppProps) => {
     }, [pixi?.id, pointer?.id, scene, sceneVersion])
 
     /* step the physics world */
-    useFrame(
-        (delta) => {
-            if (!settings || !physicsWorld) return
+    useFrame((delta) => {
+        if (!settings || !physicsWorld) return
 
-            const { timeStep, maxSubSteps, paused } = settings
-            const { world } = physicsWorld
+        const { timeStep, maxSubSteps, paused } = settings
+        const { world } = physicsWorld
 
-            if (paused) return
+        if (paused) return
 
-            const clampedDelta = Math.min(delta, 1)
-            world.step(timeStep, clampedDelta, maxSubSteps)
-        },
-        [settings?.id, physicsWorld?.id],
-        STAGES.PHYSICS
-    )
+        const clampedDelta = Math.min(delta, 1)
+        world.step(timeStep, clampedDelta, maxSubSteps)
+    }, STAGES.PHYSICS)
 
     /* sandbox update handlers */
-    useFrame(
-        (delta) => {
-            if (!sandboxUpdateHandlers) return
+    useFrame((delta) => {
+        if (!sandboxUpdateHandlers) return
 
-            sandboxUpdateHandlers.forEach((fn) => fn(delta))
-        },
-        [sandboxUpdateHandlers],
-        STAGES.SANDBOX_HANDLERS
-    )
+        sandboxUpdateHandlers.forEach((fn) => fn(delta))
+    }, STAGES.SANDBOX_HANDLERS)
 
     return (
         <>

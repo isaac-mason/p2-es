@@ -242,42 +242,38 @@ export const PickPanTool = () => {
 
     // draw pick line
     const pickLineGraphicsCleared = useRef(false)
-    useFrame(
-        () => {
-            if (!pixi) return
+    useFrame(() => {
+        if (!pixi) return
 
-            const {
-                container,
-                graphics: { pick: pickGraphics },
-            } = pixi
+        const {
+            container,
+            graphics: { pick: pickGraphics },
+        } = pixi
 
-            if (pointerConstraint.current) {
-                pickLineGraphicsCleared.current = false
+        if (pointerConstraint.current) {
+            pickLineGraphicsCleared.current = false
 
-                pickGraphics.clear()
-                container.removeChild(pickGraphics)
-                container.addChild(pickGraphics)
+            pickGraphics.clear()
+            container.removeChild(pickGraphics)
+            container.addChild(pickGraphics)
 
-                pickGraphics.lineStyle(0.01, 0x000000, 1)
+            pickGraphics.lineStyle(0.01, 0x000000, 1)
 
-                const constraint = pointerConstraint.current
+            const constraint = pointerConstraint.current
 
-                const worldPivotA = p2.vec2.create()
-                constraint.bodyA.toWorldFrame(worldPivotA, constraint.pivotA)
+            const worldPivotA = p2.vec2.create()
+            constraint.bodyA.toWorldFrame(worldPivotA, constraint.pivotA)
 
-                const worldPivotB = p2.vec2.create()
-                constraint.bodyB.toWorldFrame(worldPivotB, constraint.pivotB)
+            const worldPivotB = p2.vec2.create()
+            constraint.bodyB.toWorldFrame(worldPivotB, constraint.pivotB)
 
-                pickGraphics.moveTo(worldPivotA[0], worldPivotA[1])
-                pickGraphics.lineTo(worldPivotB[0], worldPivotB[1])
-            } else if (!pickLineGraphicsCleared.current) {
-                pickGraphics.clear()
-                pickLineGraphicsCleared.current = true
-            }
-        },
-        [pixi],
-        STAGES.RENDER_TOOL
-    )
+            pickGraphics.moveTo(worldPivotA[0], worldPivotA[1])
+            pickGraphics.lineTo(worldPivotB[0], worldPivotB[1])
+        } else if (!pickLineGraphicsCleared.current) {
+            pickGraphics.clear()
+            pickLineGraphicsCleared.current = true
+        }
+    }, STAGES.RENDER_TOOL)
 
     return null
 }

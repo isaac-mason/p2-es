@@ -1,6 +1,6 @@
 import { Component } from 'arancini'
 
-type UpdateHandler = (delta: number) => void
+type UpdateHandler = { current: (delta: number) => void }
 
 export class UpdateHandlerComponent extends Component {
     fn!: UpdateHandler
