@@ -1,6 +1,8 @@
 {
   "name": "@p2-es/sandbox",
   "description": "A demo renderer for p2-es",
+  "private": true,
+  "version": "0.0.1",
   "keywords": [
     "p2.js",
     "p2-es",
@@ -14,7 +16,6 @@
   "author": "Isaac Mason <isaac@isaacmason.com>",
   "license": "MIT",
   "packageManager": "yarn@3.2.1",
-  "version": "0.0.1",
   "scripts": {
     "build": "tsc && vite build",
     "watch": "vite build --watch",
