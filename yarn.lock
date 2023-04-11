@@ -10,17 +10,17 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@arancini/core@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@arancini/core/-/core-2.2.0.tgz#49cbcaac837ad05fa6beb91ed4813839f3c035e0"
-  integrity sha512-4IxftYJsInzNCTOx0KDzSsLrPBrxXkG+G7zAZOBYNLU+G9CeT9VMFl4L5s+2GfodJsNfiBsstp+FQsqz9/ZEjA==
+"@arancini/core@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@arancini/core/-/core-2.2.1.tgz#d73465333967a39f6f3034d52d919696b07aca19"
+  integrity sha512-AWZwdUsC0Pwd2qSaNpSAEx5+m7vuJolN/xn4Abfoczc37oVIYEnv93HHG9hZxQwhv8UGR/Y/ZuW7M4zuVcIoaw==
 
-"@arancini/react@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@arancini/react/-/react-2.2.0.tgz#d811da1d911d2a32f5bf03c7e86196dbc44607d0"
-  integrity sha512-AiLj3M3W+doDnaESMq92o+YFaIdALsfV0dONb85WLG9FcJnoowkE2jg6TdYlfWdLDwrfvd6cHO7kl0iclI85Xg==
+"@arancini/react@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@arancini/react/-/react-2.2.1.tgz#16c06daabd280e3cff2731eb5f69052c455396fd"
+  integrity sha512-Cn8ei0Jqqv5PLQ8cGIqm8888B2seM5P9OWC6KnqrawLyPzKn2TqpQWEYVb3xBO9AJNkmsnSEdUIzE4/jmx2l3g==
   dependencies:
-    "@arancini/core" "2.2.0"
+    "@arancini/core" "2.2.1"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.18.6", "@babel/code-frame@^7.5.5", "@babel/code-frame@^7.8.3":
   version "7.18.6"
@@ -5062,13 +5062,13 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-2.0.0.tgz#52520b8ae5b569215b354efc0caa3fe1e45a8adc"
   integrity sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==
 
-arancini@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/arancini/-/arancini-2.2.0.tgz#cf8bd23ecd3d9d714b874db8be349a6095e3a6fd"
-  integrity sha512-J4Hmvmp0hav92FXnlmxKhsySL314NVWgc4vrWRq53t6aTalw/envVCA1VgPW5W19RVUxfNyDzIA9j4cFCfIb4g==
+arancini@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/arancini/-/arancini-2.2.1.tgz#53139e1e128f40bab81e991b16069bec61c4b38d"
+  integrity sha512-TqxfE4ibEXRK6mD+325ZmpNVD4zopb11vQkWPxgtwBUnVqaq7PU+06E5TiJBEcbUOvUZj12WfpX4ffU5e4DpDw==
   dependencies:
-    "@arancini/core" "2.2.0"
-    "@arancini/react" "2.2.0"
+    "@arancini/core" "2.2.1"
+    "@arancini/react" "2.2.1"
 
 are-we-there-yet@^2.0.0:
   version "2.0.0"
@@ -12184,6 +12184,20 @@ p-try@^2.0.0:
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
 
+p2-es@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/p2-es/-/p2-es-1.1.8.tgz#0a5d3d5a7d1945b38f083cfbc5bc074c927f32b9"
+  integrity sha512-K7ecscAsmdAU7sqQNYhZIFVgrS5jtizLOG1js3p7p5I8zxXjNSf7mPfUQKsQkgEanUMLmpAWgpH8O8kw0nRoUw==
+  dependencies:
+    poly-decomp-es "0.4.1"
+
+p2@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/p2/-/p2-0.7.1.tgz#25f2474d9bc3a6d3140a1da26a67c9e118ac9543"
+  integrity sha512-wJxG87tHPlAO1iwGettkiU4ptoytQDoJSeP+PV8aZVT//ZHlD2H2uMtIPnQG8MXAaGR9OI1o1pqBV1g/fpNgNw==
+  dependencies:
+    poly-decomp "0.1.1"
+
 pacote@^11.2.7:
   version "11.3.5"
   resolved "https://registry.yarnpkg.com/pacote/-/pacote-11.3.5.tgz#73cf1fc3772b533f575e39efa96c50be8c3dc9d2"
@@ -12556,6 +12570,11 @@ poly-decomp-es@0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/poly-decomp-es/-/poly-decomp-es-0.4.1.tgz#523e81338ab7e16b2f5648315ddb5a4370e00109"
   integrity sha512-ClJK/YGQ3A2xCQ1YkxCM5KvHtwplZ9LHHoPlJMJ/+O3EnF7OSq9OcqsOfMilgIjZiFpccBobpb4nnDlEKdg+ig==
+
+poly-decomp@0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/poly-decomp/-/poly-decomp-0.1.1.tgz#9f68c4fa558663791c9ba4c2df7283f3096c23c9"
+  integrity sha512-clSDtuC48FR2PL2z/+VIRhfnxC7776GlJgDNAh1ZIqYOiaGqrINB+xGIWQypLgpz6Z/Ht/w7rTFEGFRNuSPOuA==
 
 posix-character-classes@^0.1.0:
   version "0.1.1"

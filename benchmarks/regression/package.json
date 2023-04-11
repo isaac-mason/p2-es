@@ -1,0 +1,13 @@
+{
+  "name": "regression",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "p2": "^0.7.1",
+    "p2-es": "^1.1.8"
+  }
+}

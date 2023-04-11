@@ -23,6 +23,7 @@
         "apps/p2-es-docs",
         "apps/p2-es-examples",
         "apps/p2-es-demos",
-        "apps/p2-es-website"
+        "apps/p2-es-website",
+        "benchmarks/regression"
     ]
 }
