@@ -15,8 +15,5 @@
     "p2-es-docs",
     "p2-es-examples",
     "p2-es-website"
-  ],
-  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
-    "onlyUpdatePeerDependentsWhenOutOfRange": true
-  }
+  ]
 }
